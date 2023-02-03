@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.23)
 
 project(OE)
 
+add_definitions(-DWIN32_LEAN_AND_MEAN)
+
 message(STATUS "This is binary dir" ${OE_BINARY_DIR})
 message(STATUS "This is Source dir" ${OE_SOURCE_DIR})
 
@@ -9,11 +11,12 @@ message(STATUS "This is Source dir" ${OE_SOURCE_DIR})
 # set(CMAKE_C_COMPILER )
 # set(CMAKE_CXX_COMPILER )
 # 在build目录下，cmake -G "Visual Studio 16 2019 Win64" ../   指定编译器vs以及平台工具集类型x64
-# 然后编译 cmake --build . --config Realease
+# 然后编译 cmake --build . --config Release
 
 
 aux_source_directory(${OE_SOURCE_DIR}/src SRC_LIST)
 message(STATUS "source code: " ${SRC_LIST})
+
 
 
 set(CMAKE_CXX_STANDARD 11)
@@ -42,8 +45,8 @@ add_executable(OE ${SRC_LIST})
 
 # 链接cam第三方库
 target_link_libraries(OE PUBLIC pylon::pylon)
-# 链接opt第三方库 oapi.lib 及其头文件
-target_link_directories(OE PUBLIC ${OE_SOURCE_DIR}/ndlib/msvc)
-target_link_libraries(OE PUBLIC oapi)
-target_include_directories(OE PUBLIC ${OE_SOURCE_DIR}/ndlib/include)
+# 链接ndi第三方库 oapi.lib ndicapi.lib 及其头文件
+target_link_directories(OE PUBLIC ${OE_SOURCE_DIR}/ndlib/msvc ${OE_SOURCE_DIR}/ndicapi/lib)
+target_link_libraries(OE PUBLIC oapi ndicapi)
+target_include_directories(OE PUBLIC ${OE_SOURCE_DIR}/ndlib/include ${OE_SOURCE_DIR}/ndicapi/include)
 

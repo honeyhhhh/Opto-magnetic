@@ -1,10 +1,13 @@
-#ifndef _TEST_H
-#define _TEST_H
+#ifndef TEST_H
+#define TEST_H
 #include <iostream>
 #include <pylon/PylonIncludes.h>
 #ifdef PYLON_WIN_BUILD
     #include <pylon/PylonGUI.h>
 #endif
+
+#include <ndicapi.h>
+
 using namespace std;
 using namespace Pylon;
 
@@ -123,4 +126,4 @@ void GigEcameraCreateWithIp()
 
 
 
-#endif	// _TEST
+#endif	// TEST
