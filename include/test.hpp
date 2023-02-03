@@ -1,12 +1,22 @@
 #ifndef TEST_H
 #define TEST_H
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <pylon/PylonIncludes.h>
 #ifdef PYLON_WIN_BUILD
     #include <pylon/PylonGUI.h>
 #endif
 
 #include <ndicapi.h>
+#include "ndtypes.h"
+#include "ndpack.h"
+#include "ndopto.h"
+
+#include "certus_aux.h"
+#include "ot_aux.h"
+
 
 using namespace std;
 using namespace Pylon;

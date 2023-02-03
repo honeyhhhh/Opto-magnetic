@@ -1508,6 +1508,7 @@ NDI_DECL1 int NDI_DECL2 OptoFileCloseAll( UINT uFileId );
 
 
 CPLUSPLUS_END
+
 // these calls included for external apps only.  Otherwise, the naming conflicts with NDLIB.
 CPLUSPLUS_START
 #ifndef INC_NDMATH_H

@@ -3,6 +3,12 @@ cmake_minimum_required(VERSION 3.23)
 project(OE)
 
 add_definitions(-DWIN32_LEAN_AND_MEAN)
+add_compile_options(-DWIN32 -DSTRICT -D_CONSOLE -DPLATFORM_X86)
+add_compile_options(/wd4430)
+add_compile_options(/wd4819)
+
+
+
 
 message(STATUS "This is binary dir" ${OE_BINARY_DIR})
 message(STATUS "This is Source dir" ${OE_SOURCE_DIR})
