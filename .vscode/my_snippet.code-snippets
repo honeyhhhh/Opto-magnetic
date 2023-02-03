@@ -1,0 +1,7 @@
+{
+	"#ifndef … #define … #endif":{
+		"prefix": "def",
+		"body": "#ifndef ${1:${TM_FILENAME_BASE/(.*)/_${1:/upcase}_H/i}} \n#define $1 \n#include <iostream>\n\n\n\n\n\n\n\n#endif\t// $1"
+	}
+				
+}
