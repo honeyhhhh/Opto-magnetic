@@ -2,5 +2,5 @@
 mkdir build         
 mkdir target            
 cd build            
-cmake ..            
+cmake -G "Visual Studio xx xxxx" -A Win32 ../                   
 cmake --build . --config Release        

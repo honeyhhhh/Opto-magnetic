@@ -43,6 +43,8 @@ using namespace Pylon;
 static const uint32_t c_countOfImagesToGrab = 1;
 static const size_t c_maxCamerasToUse = 4;
 
+struct ndicapi;
+
 
 // 非同步 采集图像
 int Grab_MultipleCameras();
@@ -53,7 +55,9 @@ void GigEcameraCreateWithIp();
 
 
 
-void certus_hhh();
+int certus_test();
+
+int aurora_test();
 
 
 

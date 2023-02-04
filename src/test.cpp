@@ -3,9 +3,12 @@
 #include <stdio.h>
 #include <time.h>
 #include <windows.h>
+#include <iostream>
+
+using namespace std;
 
 
-void sleep( unsigned int uSec )
+static void sleep( unsigned int uSec )
 {
 	Sleep(uSec * 1000 );
 }
@@ -121,7 +124,70 @@ void GigEcameraCreateWithIp()
 
 
 
-void certus_hhh()
+int aurora_test()
+{
+    cout << "begin" << endl;
+    bool checkDSR = false;
+    ndicapi* device(nullptr);
+    const char* name(nullptr);
+
+
+    const int MAX_SERIAL_PORTS = 20;
+    for (int i = 0; i < MAX_SERIAL_PORTS; ++i)
+    {
+        name = ndiSerialDeviceName(i);
+        cout << name << endl;
+
+        int result = ndiSerialProbe(name,checkDSR);
+        if (result == NDI_OKAY)
+        {
+            break;
+        }
+    }
+    if (name != nullptr)
+    {
+        cout << device->SerialDeviceName << endl;
+
+        device = ndiOpenSerial(name);
+
+    }
+    else
+    {
+        cout << "not found !" << endl;
+    }
+
+    if (device != nullptr)
+    {
+        const char* reply = ndiCommand(device, "INIT:");
+        if (strncmp(reply, "ERROR", strlen(reply)) == 0 || ndiGetError(device) != NDI_OKAY)
+        {
+            std::cerr << "Error when sending command: " << ndiErrorString(ndiGetError(device)) << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        reply = ndiCommand(device, "COMM:%d%03d%d", NDI_115200, NDI_8N1, NDI_NOHANDSHAKE);
+        sleep(1);
+
+        // Add your own commands here!!!
+        cout << "hostname:" << device->Hostname << endl;
+        cout << device->Port << endl;
+        cout << device->IsTracking << endl;
+
+
+        ndiCloseSerial(device);
+    }
+    else
+    {
+        cout << "not device !" << endl;
+    }
+    cout << "end" << endl;
+    return 0;
+
+
+}
+
+
+int certus_test()
 {
     char
         szNDErrorString[MAX_ERROR_STRING_LENGTH + 1];
@@ -263,8 +329,8 @@ PROGRAM_COMPLETE:
     OptotrakDeActivateMarkers( );
     TransputerShutdownSystem( );
 
-    sleep(5000)
-	exit( 0 );
+    sleep(5);
+	return 0;
 
 
 ERROR_EXIT:
@@ -280,8 +346,8 @@ ERROR_EXIT:
 	fprintf( stdout, "\n\n...TransputerShutdownSystem\n" );
 	OptotrakDeActivateMarkers( );
 	TransputerShutdownSystem( );
-    sleep(5000)
+    sleep(5);
 
-    exit( 1 );
+    return 1;
 
 } 

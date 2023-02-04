@@ -6,7 +6,8 @@ using namespace std;
 
 int main()
 {
-    certus_hhh();
+    cout << "main" << endl; 
+    aurora_test();
 
     return 0;
 }

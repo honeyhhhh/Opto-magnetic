@@ -3,4 +3,5 @@ target/*
 .vscode/
 build/*
 ndlib/samples/*
-ndlib/build/
+ndlib/build/*
+ndicapi/combinedAPI/*

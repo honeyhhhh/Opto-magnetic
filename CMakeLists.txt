@@ -53,5 +53,5 @@ add_executable(OE ${SRC_LIST})
 # 链接cam第三方库
 target_link_libraries(OE PUBLIC pylon::pylon)
 # 链接ndi第三方库 oapi.lib ndicapi.lib  extern "C"
-target_link_libraries(OE PUBLIC certus_aux oapi ndicapi)
+target_link_libraries(OE PUBLIC oapi ndicapi certus_aux)
 
