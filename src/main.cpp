@@ -6,7 +6,7 @@ using namespace std;
 
 int main()
 {
-    int i = Grab_MultipleCameras();
+    certus_hhh();
 
     return 0;
 }

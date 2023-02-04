@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 
-project(OE)
+project(OE LANGUAGES CXX)
 
 add_definitions(-DWIN32_LEAN_AND_MEAN)
 add_compile_options(-DWIN32 -DSTRICT -D_CONSOLE -DPLATFORM_X86)
@@ -8,6 +8,8 @@ add_compile_options(/wd4430)
 add_compile_options(/wd4819)
 
 
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -m32")
+# set(CMAKE_CXX_FLAGS "-m32")
 
 
 message(STATUS "This is binary dir" ${OE_BINARY_DIR})
@@ -16,7 +18,7 @@ message(STATUS "This is Source dir" ${OE_SOURCE_DIR})
 
 # set(CMAKE_C_COMPILER )
 # set(CMAKE_CXX_COMPILER )
-# 在build目录下，cmake -G "Visual Studio 16 2019 Win64" ../   指定编译器vs以及平台工具集类型x64
+# 在build目录下，cmake -G "Visual Studio 16 2019" -A Win32 ../   指定编译器vs以及平台工具集类型x64
 # 然后编译 cmake --build . --config Release
 
 
@@ -29,8 +31,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE Release)
 
 
-include_directories(${OE_SOURCE_DIR}/include)
-link_directories(${OE_SOURCE_DIR}/lib)
+include_directories(${OE_SOURCE_DIR}/include ${OE_SOURCE_DIR}/ndlib/include ${OE_SOURCE_DIR}/ndicapi/include)
+link_directories(${OE_SOURCE_DIR}/lib ${OE_SOURCE_DIR}/ndlib/lib32 ${OE_SOURCE_DIR}/ndicapi/lib32)
 
 
 set(EXECUTABLE_OUTPUT_PATH ${OE_SOURCE_DIR}/target)
@@ -46,13 +48,10 @@ else(pylon_FOUND)
 endif(pylon_FOUND)
 
 
-
 add_executable(OE ${SRC_LIST})
 
 # 链接cam第三方库
 target_link_libraries(OE PUBLIC pylon::pylon)
-# 链接ndi第三方库 oapi.lib ndicapi.lib 及其头文件
-target_link_directories(OE PUBLIC ${OE_SOURCE_DIR}/ndlib/msvc ${OE_SOURCE_DIR}/ndicapi/lib)
-target_link_libraries(OE PUBLIC oapi ndicapi)
-target_include_directories(OE PUBLIC ${OE_SOURCE_DIR}/ndlib/include ${OE_SOURCE_DIR}/ndicapi/include)
+# 链接ndi第三方库 oapi.lib ndicapi.lib  extern "C"
+target_link_libraries(OE PUBLIC certus_aux oapi ndicapi)
 

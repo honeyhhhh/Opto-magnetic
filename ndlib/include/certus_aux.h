@@ -1,3 +1,12 @@
+#ifndef _CERTUS_AUX_H 
+#define _CERTUS_AUX_H 
+
+
+
+
+
+
+
 /*****************************************************************
 Name:			certus_aux.h
 
@@ -12,6 +21,8 @@ Description:
 Project Files Included
 *****************************************************************/
 #include "datatypes.h"
+
+
 
 /*****************************************************************
 ND Library Files Included
@@ -39,7 +50,7 @@ Description:
 	Allocate memory to contain the specified number of device handles;
 
 *****************************************************************/
-int AllocateMemoryDeviceHandles( DeviceHandle **ppdtDeviceHandles, int nDevices );
+extern int AllocateMemoryDeviceHandles( DeviceHandle **ppdtDeviceHandles, int nDevices );
 
 
 /*****************************************************************
@@ -68,7 +79,7 @@ Description:
 	DeviceHandleInfo structures' pointers.
 
 *****************************************************************/
-int AllocateMemoryDeviceHandlesInfo( DeviceHandleInfo **ppdtDeviceHandlesInfo, DeviceHandle *pdtDeviceHandles, int nDevices );
+extern int AllocateMemoryDeviceHandlesInfo( DeviceHandleInfo **ppdtDeviceHandlesInfo, DeviceHandle *pdtDeviceHandles, int nDevices );
 
 
 
@@ -93,7 +104,7 @@ Description:
 	allocate memory to conatin the specified number of properties.
 
 *****************************************************************/
-int AllocateMemoryDeviceHandleProperties( DeviceHandleProperty **pdtProperties, int nProperties );
+extern int AllocateMemoryDeviceHandleProperties( DeviceHandleProperty **pdtProperties, int nProperties );
 
 
 /*****************************************************************
@@ -122,7 +133,7 @@ Description:
 	it in the application structure.
 
 *****************************************************************/
-int ApplicationStoreDeviceProperties( ApplicationDeviceInformation **ppdtAppDevices,
+extern int ApplicationStoreDeviceProperties( ApplicationDeviceInformation **ppdtAppDevices,
 									  DeviceHandleInfo *pdtDeviceHandleInfo, int nDevices );
 
 
@@ -146,7 +157,7 @@ Description:
 	OptotrakGetStatus function call.
 
 *****************************************************************/
-unsigned int uDetermineSystem( void );
+extern unsigned int uDetermineSystem( void );
 
 
 /*****************************************************************
@@ -180,7 +191,7 @@ Description:
 	properties.
 
 *****************************************************************/
-int DetermineStroberConfiguration( DeviceHandle** ppdtDeviceHandles,
+extern int DetermineStroberConfiguration( DeviceHandle** ppdtDeviceHandles,
 								   DeviceHandleInfo** ppdtDeviceHandlesInfo,
 								   int* pnDevices );
 
@@ -213,7 +224,7 @@ Description:
 	by the specified DeviceHandles pointer.
 
 *****************************************************************/
-int GetDeviceHandlesFromSystem( DeviceHandle **ppdtDeviceHandles, int *pnDevices );
+extern int GetDeviceHandlesFromSystem( DeviceHandle **ppdtDeviceHandles, int *pnDevices );
 
 
 /*****************************************************************
@@ -237,7 +248,7 @@ Description:
 	specified device.
 
 *****************************************************************/
-int GetDevicePropertiesFromSystem( DeviceHandleInfo* pdtDevice );
+extern int GetDevicePropertiesFromSystem( DeviceHandleInfo* pdtDevice );
 
 
 /*****************************************************************
@@ -264,7 +275,7 @@ Description:
 	devices present in the system.
 
 *****************************************************************/
-int ApplicationDetermineCollectionParameters( int nDevices, ApplicationDeviceInformation* pdtDevices,
+extern int ApplicationDetermineCollectionParameters( int nDevices, ApplicationDeviceInformation* pdtDevices,
 											  OptotrakSettings* pdtSettings );
 
 
@@ -293,7 +304,7 @@ Description:
 	(where appropriate) for the specified device.
 
 *****************************************************************/
-int SetMarkersToActivateForDevice( ApplicationDeviceInformation* pdtDevice, int nDeviceHandle, int nMarkers );
+extern int SetMarkersToActivateForDevice( ApplicationDeviceInformation* pdtDevice, int nDeviceHandle, int nMarkers );
 
 
 /*****************************************************************
@@ -324,4 +335,9 @@ Description:
 	Set the number of markers to fire for the specified device.
 
 *****************************************************************/
-int SetMarkersToActivateForToolDevice( ApplicationDeviceInformation* pdtDevice, int nDeviceHandle, int nMarkers, ApplicationDeviceInformation* pdtDevices, int nDevices );
+extern int SetMarkersToActivateForToolDevice( ApplicationDeviceInformation* pdtDevice, int nDeviceHandle, int nMarkers, ApplicationDeviceInformation* pdtDevices, int nDevices );
+
+
+
+
+#endif	// _CERTUS_AUX_H

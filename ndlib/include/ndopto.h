@@ -1465,8 +1465,7 @@ NDI_DECL1 int	NDI_DECL2 DataGetNext3D( unsigned *pnFrame, unsigned *pElems, unsi
 NDI_DECL1 int	NDI_DECL2 DataGetNextCentroid( unsigned *pnFrame, unsigned *pElems, unsigned *pFlags, void *pDataDest );
 NDI_DECL1 int	NDI_DECL2 DataGetNextRaw( unsigned *pnFrame, unsigned *pElems, unsigned *pFlags, void *pDataDest );
 NDI_DECL1 int	NDI_DECL2 DataGetNextTransforms( unsigned *pnFrame, unsigned *pElems, unsigned *pFlags, void *pDataDest );
-NDI_DECL1 int	NDI_DECL2 DataGetNextTransforms2( unsigned *pnFrame, unsigned *pElems, unsigned *pFlags, struct OptotrakRigidStruct *pDataDest6D,
-													Position3d *pDataDest3D );
+NDI_DECL1 int	NDI_DECL2 DataGetNextTransforms2( unsigned *pnFrame, unsigned *pElems, unsigned *pFlags, struct OptotrakRigidStruct *pDataDest6D,												Position3d *pDataDest3D );
 NDI_DECL1 int	NDI_DECL2 DataGetNextOdauRaw( int nOdauId, unsigned *pnFrame, unsigned *pElems, unsigned *pFlags, void *pDataDest );
 
 NDI_DECL1 int	NDI_DECL2 DataBufferInitializeFile( unsigned uDataId, const char *pszFileName );

@@ -5,6 +5,13 @@ Description:
 	Data types used by the Optotrak sample programs.
 
 *****************************************************************/
+#ifndef _DATATYPES_H 
+#define _DATATYPES_H 
+
+
+
+
+
 
 #define OPTO_APP_ERROR_CODE					3000
 #define OPTOTRAK_REVISION_UNKNOWN_FLAG		0
@@ -73,3 +80,7 @@ typedef struct ApplicationDeviceInformationStruct
 	boolean b3020Capability;
 	boolean bHasROM;
 } ApplicationDeviceInformation;
+
+
+
+#endif	// _DATATYPES_H
