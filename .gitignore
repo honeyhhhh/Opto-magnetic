@@ -3,3 +3,4 @@ target/*
 .vscode/
 build/*
 ndlib/samples/*
+ndlib/build/

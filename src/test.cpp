@@ -153,7 +153,7 @@ void certus_hhh()
 	/*
 	 * look for the -nodld parameter that indicates 'no download'
 	 */
-	if( 1)
+	if(1)
 	{
 		/*
 		 * Load the system of processors.
@@ -164,6 +164,7 @@ void certus_hhh()
 			goto ERROR_EXIT;
 		} /* if */
 
+		sleep( 1 );
 	} /* if */
 
     /*
@@ -235,6 +236,7 @@ void certus_hhh()
 			 * Wait 1 second
 			 */
 			fprintf( stdout, "...beeping for one second\n" );
+			sleep( 1 );
 
 			/*
 			 * Turn the beeper OFF
@@ -261,6 +263,9 @@ PROGRAM_COMPLETE:
     OptotrakDeActivateMarkers( );
     TransputerShutdownSystem( );
 
+    sleep(5000)
+	exit( 0 );
+
 
 ERROR_EXIT:
 	/*
@@ -275,5 +280,8 @@ ERROR_EXIT:
 	fprintf( stdout, "\n\n...TransputerShutdownSystem\n" );
 	OptotrakDeActivateMarkers( );
 	TransputerShutdownSystem( );
+    sleep(5000)
 
-} /* main */
+    exit( 1 );
+
+} 

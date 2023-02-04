@@ -1,4 +1,0 @@
-E:/dataacquisition/oe/ndlib/build/CMakeFiles/certus_aux_shared.dir
-E:/dataacquisition/oe/ndlib/build/CMakeFiles/certus_aux_static.dir
-E:/dataacquisition/oe/ndlib/build/CMakeFiles/ALL_BUILD.dir
-E:/dataacquisition/oe/ndlib/build/CMakeFiles/ZERO_CHECK.dir
