@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include <time.h>
 #include <windows.h>
+#include <chrono>
 #include <iostream>
-
+FILE *logg = NULL;
 
 static void sleep( unsigned int uSec )
 {
@@ -122,9 +123,51 @@ void GigEcameraCreateWithIp()
 
 
 
+
+void get_frame(ndicapi* device)
+{
+    auto t1 = std::chrono::steady_clock::now();
+    int frame_count = 0;
+    while(1)
+    {
+        std::chrono::system_clock::time_point tt = std::chrono::system_clock::now();
+        std::chrono::nanoseconds d = tt.time_since_epoch();
+
+        const char* re = ndiTX(device, 0x0801);
+
+        ulong frame_number =  ndiGetTXFrame(device, 10);
+        double trans[8];
+        int tfStatus = ndiGetTXTransform(device, 10, trans);
+        frame_count++;
+        if (tfStatus == NDI_MISSING || tfStatus == NDI_DISABLED)
+        {
+            fprintf(logg, "bad frame\n");
+        }
+
+        fprintf(logg, "frame %lu time:%llu\n%.2lf %.2lf %.2lf %.2lf %.2lf %.2lf %.2lf %.2lf\n", frame_number, d.count(), 
+                                                trans[0], trans[1], trans[2], trans[3], trans[4], trans[5], trans[6], trans[7]);
+
+        if (frame_number > 400)
+        {
+            break;
+        }
+    }
+
+    auto t2 = std::chrono::steady_clock::now();
+    double dr_ms = std::chrono::duration<double,std::milli>(t2-t1).count();
+
+    fprintf(logg, "frame_count :%d ; use time :%lf\n", frame_count, dr_ms);
+
+
+
+}
+
+
+
+
 int aurora_test()
 {
-    FILE *logg = NULL;
+
     // std::cout is not use
     logg = fopen("../log.txt", "w");
     if (logg == NULL)
@@ -234,11 +277,7 @@ int aurora_test()
             fprintf(logg, "The PHINF command can be used to get detailed information about the port handle: %02X\n",port_handle);
             reply = ndiCommand(device, "PENA:%02X%c",port_handle,'D');
             fprintf(logg, "send PENA:%02X%c command Enable port handles:%s\n", port_handle,'D',reply);
-            // if (strncmp(reply, "ERROR", strlen(reply)) == 0 || ndiGetError(device) != NDI_OKAY)
-            // {
-            //     std::cerr << "Error when sending command: " << ndiErrorString(ndiGetError(device)) << std::endl;
-            //     return EXIT_FAILURE;
-            // }
+
 
         }
         
@@ -251,10 +290,36 @@ int aurora_test()
         
 
 
+        /*
+            Start tracking
+        */
+
+        reply = ndiCommand(device, "TSTART:");
+        fprintf(logg, "----- Start tracking -----\n");
+        if (strncmp(reply, "ERROR", strlen(reply)) == 0 || ndiGetError(device) != NDI_OKAY)
+        {
+            std::cerr << "Error when sending command: " << ndiErrorString(ndiGetError(device)) << std::endl;
+            return EXIT_FAILURE;
+        }
 
 
+        /*
+            get frame
+
+        */
+        get_frame(device);
 
 
+        /*
+            Stop tracking
+        */
+        reply = ndiCommand(device, "TSTOP:");
+        fprintf(logg, "----- Stop tracking -----\n");
+        if (strncmp(reply, "ERROR", strlen(reply)) == 0 || ndiGetError(device) != NDI_OKAY)
+        {
+            std::cerr << "Error when sending command: " << ndiErrorString(ndiGetError(device)) << std::endl;
+            return EXIT_FAILURE;
+        }
 
         // 关闭串口
         ndiCloseSerial(device);
