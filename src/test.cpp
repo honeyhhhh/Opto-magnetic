@@ -5,7 +5,6 @@
 #include <windows.h>
 #include <iostream>
 
-using namespace std;
 
 
 static void sleep( unsigned int uSec )
@@ -136,24 +135,20 @@ int aurora_test()
     for (int i = 0; i < MAX_SERIAL_PORTS; ++i)
     {
         name = ndiSerialDeviceName(i);
-        cout << name << endl;
-
         int result = ndiSerialProbe(name,checkDSR);
         if (result == NDI_OKAY)
         {
+            std::cout << name << std::endl;
             break;
         }
     }
     if (name != nullptr)
     {
-        cout << device->SerialDeviceName << endl;
-
         device = ndiOpenSerial(name);
-
     }
     else
     {
-        cout << "not found !" << endl;
+        std::cout << "not found !" << std::endl;
     }
 
     if (device != nullptr)
@@ -166,21 +161,16 @@ int aurora_test()
         }
 
         reply = ndiCommand(device, "COMM:%d%03d%d", NDI_115200, NDI_8N1, NDI_NOHANDSHAKE);
-        sleep(1);
-
         // Add your own commands here!!!
-        cout << "hostname:" << device->Hostname << endl;
-        cout << device->Port << endl;
-        cout << device->IsTracking << endl;
 
 
         ndiCloseSerial(device);
     }
     else
     {
-        cout << "not device !" << endl;
+        std::cout << "not device !" << std::endl;
     }
-    cout << "end" << endl;
+    std::cout << "end" << std::endl;
     return 0;
 
 

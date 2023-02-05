@@ -47,11 +47,29 @@ else(pylon_FOUND)
     message(FATAL_ERROR "pylon not found!")
 endif(pylon_FOUND)
 
+find_package(Threads)
+if(Threads_FOUND)
+    message(STATUS "found threads")
+    # LIST(APPEND ${PROJECT_NAME}_LIBS ${CMAKE_THREAD_LIBS_INIT})
+    # message(STATUS ${CMAKE_THREAD_LIBS_INIT})
+    message(STATUS ${CMAKE_USE_WIN32_THREADS_INIT})
+    # message(STATUS ${CMAKE_USE_PTHREADS_INIT})
+    # message(STATUS ${CMAKE_HP_PTHREADS_INIT})
+
+else(Threads_FOUND)
+    message(FATAL_ERROR "threads not found!")
+endif(Threads_FOUND)
+
+
+
 
 add_executable(OE ${SRC_LIST})
+
+target_link_libraries(OE PUBLIC Threads::Threads wsock32 ws2_32 ndicapi)
 
 # 链接cam第三方库
 target_link_libraries(OE PUBLIC pylon::pylon)
 # 链接ndi第三方库 oapi.lib ndicapi.lib  extern "C"
-target_link_libraries(OE PUBLIC oapi ndicapi certus_aux)
+target_link_libraries(OE PUBLIC oapi certus_aux)
+
 

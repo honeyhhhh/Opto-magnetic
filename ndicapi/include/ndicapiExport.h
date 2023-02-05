@@ -14,6 +14,9 @@
 
 /* #undef ndicapi_STATIC */
 
+// 使用静态库 而不是动态库
+#define ndicapi_STATIC
+
 #if defined(WIN32) && !defined(ndicapi_STATIC)
  #if defined(ndicapi_EXPORTS)
   #define ndicapiExport __declspec( dllexport )

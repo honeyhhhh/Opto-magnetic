@@ -8,10 +8,10 @@
 #ifdef PYLON_WIN_BUILD
     #include <pylon/PylonGUI.h>
 #endif
-
+#include "ndicapi.h"
 extern "C"
 {
-#include <ndicapi.h>
+
 #include "ndtypes.h"
 #include "ndpack.h"
 #include "ndopto.h"
