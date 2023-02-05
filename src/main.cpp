@@ -6,8 +6,8 @@ using namespace std;
 
 int main()
 {
-    cout << "main" << endl; 
-    aurora_test();
+    cout << "main start" << endl; 
+    cout << aurora_test() << endl;
 
     return 0;
 }

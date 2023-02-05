@@ -65,7 +65,7 @@ endif(Threads_FOUND)
 
 add_executable(OE ${SRC_LIST})
 
-target_link_libraries(OE PUBLIC Threads::Threads wsock32 ws2_32 ndicapi)
+target_link_libraries(OE PUBLIC Threads::Threads wsock32 ws2_32 ndicapi) # 嵌套顺序
 
 # 链接cam第三方库
 target_link_libraries(OE PUBLIC pylon::pylon)

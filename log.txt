@@ -1,0 +1,27 @@
+begin aurora test
+open serial :COM8
+------ system version ------ 
+ Aurora Control Firmware
+NDI S/N: D4-04577
+Characterization Date: 2016-09-16
+Freeze Tag: AURORA Rev 008.000
+Freeze Date: 2013-07-25
+(C) Northern Digital Inc.
+
+----- Init system and  Set System COM Parms -----
+send INIT command :OKAY
+send connect serial command :OKAY
+----- Initialize All Port handle -----
+send PHSR:01 command Are there port handles to be freed?:00
+send PHSR:02 command Are there port handles to be initialized?:010A001
+found 1 PHSRNumberOfHandles need init
+The PHINF command can be used to get detailed information about the port handle: 0A
+send PINIT:0A command Initialize port handles:OKAY
+send PHSR:02 command Are there port handles to be initialized?:00
+found 0 PHSRNumberOfHandles
+----- Enable All Ports -----
+send PHSR:03 command  Are there port handles to be enabled?:010A011
+found 1 PHSRNumberOfHandles need activate
+The PHINF command can be used to get detailed information about the port handle: 0A
+send PENA:0AD command Enable port handles:OKAY
+end
