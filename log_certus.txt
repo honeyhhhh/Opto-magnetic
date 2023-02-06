@@ -1,0 +1,85 @@
+Optotrak Certus sample program
+
+...TransputerLoadSystem
+...TransputerInitializeSystem
+...DetermineSystem
+        System Detected: Optotrak Certus
+...DetermineStroberConfiguration
+.........Found 1 devices
+.........Device 001 (ID 1) status: DH_STATUS_INITIALIZED
+.........Found 1 devices
+.........Device 001 (ID 1) status: DH_STATUS_ENABLED
+
+...OptotrakDeviceHandleSetProperties (MarkersToActivate) (Device Marker Strober)
+.....Set Markers To Activate = 2
+...OptotrakDeviceHandleSetProperties (FiringSequence) (Device Marker Strober)
+.....Set Firing Sequence = 001, 002,
+
+...Device 0 properties:
+......Property_00 - Status                = 3
+......Property_01 - Strober Port          = 1
+......Property_02 - Device Name           = Marker Strober
+......Property_00 = UNKNOWN PROPERTY TYPE
+......Property_03 - Markers To Activate   = 2
+......Property_04 - MaxDeviceMarkers      = 24
+......Property_05 - Start Marker Period   = 1
+......Property_06 - Device Switches       = 2
+......Property_07 - Device VLEDs          = 1
+......Property_08 - Strober Port Order    = 1
+......Property_09 - Strober SubPort       = 0
+......Property_10 - Activation Sequence   = 001, 002,
+......Property_00 = UNKNOWN PROPERTY TYPE
+......Property_11 - Has Rom?              = 0
+......Property_12 - Num ToolPorts         = 0
+......Property_13 - 3020 Capability       = 0
+......Property_14 - 3020 MrkrsToActivate  = 0
+......Property_15 - 3020 StartMarkerPrd   = 0
+......Property_16 - Device Type           = 255
+
+
+
+...OptotrakSetProcessingFlags
+...OptotrakLoadCameraParameters
+...OptotrakSetupCollection
+.....2, 30.00, 2500, 30, 160, 0, 0.35, 7.00, 1, 0
+...OptotrakActivateMarkers
+
+
+Sample Program Results:
+
+
+
+3D Data Display
+
+Frame Number:       60
+Elements    :        2
+Flags       : 0x0000
+Marker_001: X   MISSING     Y    MISSING     Z    MISSING
+Marker_002: X   MISSING     Y    MISSING     Z    MISSING
+
+Frame Number:       60
+Elements    :        2
+Flags       : 0x0000
+Marker_001: X   MISSING     Y    MISSING     Z    MISSING
+Marker_002: X   MISSING     Y    MISSING     Z    MISSING
+
+Frame Number:       61
+Elements    :        2
+Flags       : 0x0000
+Marker_001: X   MISSING     Y    MISSING     Z    MISSING
+Marker_002: X   MISSING     Y    MISSING     Z    MISSING
+
+Frame Number:       61
+Elements    :        2
+Flags       : 0x0000
+Marker_001: X   MISSING     Y    MISSING     Z    MISSING
+Marker_002: X   MISSING     Y    MISSING     Z    MISSING
+
+Frame Number:       62
+Elements    :        2
+Flags       : 0x0000
+Marker_001: X   MISSING     Y    MISSING     Z    MISSING
+Marker_002: X   MISSING     Y    MISSING     Z    MISSING
+
+...OptotrakDeActivateMarkers
+...OptotrakStopCollection
