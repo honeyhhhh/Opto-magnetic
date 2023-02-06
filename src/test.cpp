@@ -40,9 +40,35 @@ int Grab_MultipleCameras()
         for (size_t i = 0; i < cameras.GetSize(); ++i)
         {
             cameras[i].Attach( tlFactory.CreateDevice( devices[i] ) );
+            cameras[i].Open(); //打开才能读参数
+            
 
             // Print the model name of the camera.
-            cout << "Using device " << cameras[i].GetDeviceInfo().GetModelName() << endl;
+            cout << "Using device " << 
+            cameras[i].GetDeviceInfo().GetModelName() << " " <<
+            cameras[i].GetDeviceInfo().GetIpAddress() << " " <<
+            cameras[i].GetDeviceInfo().GetDeviceClass() <<  " " <<
+            cameras[i].GetDeviceInfo().GetSerialNumber() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("OffsetX")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("OffsetY")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("ExposureTimeAbs")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("ExposureMode")).ToString() << " " <<
+            // CParameter(cameras[i].GetNodeMap().GetNode("ExposureStartDelayAbs")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("AcquisitionMode")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("AcquisitionFrameRateEnable")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("AcquisitionFrameRateAbs")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("Width")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("Height")).ToString() << " " <<
+            CEnumParameter(cameras[i].GetNodeMap().GetNode("PixelFormat")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("TriggerSource")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("TriggerActivation")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("TriggerSelector")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("TriggerMode")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("ReadoutTimeAbs")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("ResultingFrameRateAbs")).ToString() << " " <<
+            CParameter(cameras[i].GetNodeMap().GetNode("ShutterMode")).ToString() << " " <<
+
+            endl;
         }
 
         // Starts grabbing for all cameras starting with index 0. The grabbing
@@ -74,6 +100,7 @@ int Grab_MultipleCameras()
 #ifdef PYLON_WIN_BUILD
                 // Show the image acquired by each camera in the window related to each camera.
                 Pylon::DisplayImage( cameraContextValue, ptrGrabResult );
+               
 #endif
 
                 // Print the index and the model name of the camera.
@@ -91,6 +118,14 @@ int Grab_MultipleCameras()
                 cout << "Error: " << std::hex << ptrGrabResult->GetErrorCode() << std::dec << " " << ptrGrabResult->GetErrorDescription() << endl;
             }
         }
+
+
+        cameras.StopGrabbing();
+        for (size_t i = 0; i < cameras.GetSize(); ++i)
+        {
+            cameras[i].Close();
+        }
+            
     }
     catch (const GenericException& e)
     {
@@ -103,6 +138,9 @@ int Grab_MultipleCameras()
     // Comment the following two lines to disable waiting on exit.
     cerr << endl << "Press enter to exit." << endl;
     while (cin.get() != '\n');
+
+    
+
 
     // Releases all pylon resources.
     PylonTerminate();
@@ -212,7 +250,7 @@ int aurora_test()
 
     if (device != nullptr)
     {
-        const char* reply = ndiCommand(device, "VER:4");
+        const char* reply = ndiCo2mmand(device, "VER:4");
         fprintf(logg, "------ system version ------ \n %s", reply);
 
 
@@ -338,20 +376,68 @@ int aurora_test()
 }
 
 
+
+static void DisplayFloat( float fFloat )
+{
+	if( fFloat < MAX_NEGATIVE )
+	{
+		fprintf( stdout, "%10s%5s", "MISSING", "" );
+	}
+	else
+	{
+		fprintf( stdout, "%10.2f%5s", fFloat, "" );
+	} /* if */
+} /* DisplayFloat */
+
+
+static void DisplayPosition3d( Position3d dtPosition3d	)
+{
+	fprintf( stdout, "X" );
+	DisplayFloat( dtPosition3d.x );
+	fprintf( stdout, "Y " );
+	DisplayFloat( dtPosition3d.y );
+	fprintf( stdout, "Z " );
+	DisplayFloat( dtPosition3d.z );
+
+} /* DisplayPosition3d */
+
+
+static void DisplayMarker( int nMarker, Position3d dtPosition3d )
+{
+	fprintf( stdout, "Marker_%.3d: ", nMarker );
+	DisplayPosition3d( dtPosition3d );
+	fprintf( stdout, "\n" );
+
+} /* DisplayMarker */
+
 int certus_test()
 {
-    char
-        szNDErrorString[MAX_ERROR_STRING_LENGTH + 1];
-    int
-		i,
-		nDevices;
-	ApplicationDeviceInformation
-		*pdtDevices;
-    DeviceHandle
-        *pdtDeviceHandles;
-    DeviceHandleInfo
-        *pdtDeviceHandlesInfo;
-
+    // logg = fopen("../log_certus.txt", "w");
+    // if (logg == NULL)
+    // {
+    //     std::cout << "failed create log" << endl;
+    // }
+    // fprintf(logg, "begin certus test\n");
+	OptotrakSettings dtSettings;
+    char szNDErrorString[MAX_ERROR_STRING_LENGTH + 1];
+	char szProperty[32];
+    int i;
+	int nCurDevice;
+	int nCurProperty;
+	int nCurFrame;
+	int nCurMarker;
+	int nMarkersToActivate;
+	int nDevices;
+	int nDeviceMarkers;
+	ApplicationDeviceInformation *pdtDevices;
+    DeviceHandle *pdtDeviceHandles;
+    DeviceHandleInfo *pdtDeviceHandlesInfo;
+    unsigned int uFlags;
+    unsigned int uElements;
+    unsigned int uFrameNumber;
+	Position3d *p3dData;
+	char *pChar;
+	char szInput[10];
 
     /*
      * initialization
@@ -360,116 +446,170 @@ int certus_test()
 	pdtDevices = NULL;
 	pdtDeviceHandles = NULL;
 	pdtDeviceHandlesInfo = NULL;
+	p3dData = NULL;
+	nMarkersToActivate = 0;
 	nDevices = 0;
+	nDeviceMarkers = 0;
+	dtSettings.nMarkers = 2;
+	dtSettings.fFrameFrequency = SAMPLE_FRAMEFREQ;
+	dtSettings.fMarkerFrequency = SAMPLE_MARKERFREQ;
+	dtSettings.nThreshold = 30;
+	dtSettings.nMinimumGain = 160;
+	dtSettings.nStreamData = SAMPLE_STREAMDATA;
+	dtSettings.fDutyCycle = SAMPLE_DUTYCYCLE;
+	dtSettings.fVoltage = SAMPLE_VOLTAGE;
+	dtSettings.fCollectionTime = 1.0;
+	dtSettings.fPreTriggerTime = 0.0;
 
-	/*
-	 * Announce that the program has started
-	 */
-	fprintf( stdout, "\nOptotrak Certus sample program #12\n\n" );
-
-	/*
-	 * look for the -nodld parameter that indicates 'no download'
-	 */
-	if(1)
+	fprintf( stdout, "...TransputerLoadSystem\n" );
+	if( TransputerLoadSystem( "system" ) != OPTO_NO_ERROR_CODE )
 	{
-		/*
-		 * Load the system of processors.
-		 */
-		fprintf( stdout, "...TransputerLoadSystem\n" );
-		if( TransputerLoadSystem( "system" ) != OPTO_NO_ERROR_CODE )
-		{
-			goto ERROR_EXIT;
-		} /* if */
+		goto ERROR_EXIT;
+	}
 
-		sleep( 1 );
-	} /* if */
+	sleep( 1 );
 
-    /*
-     * Communication Initialization
-     * Once the system processors have been loaded, the application
-     * prepares for communication by initializing the system processors.
-     */
 	fprintf( stdout, "...TransputerInitializeSystem\n" );
     if( TransputerInitializeSystem( OPTO_LOG_ERRORS_FLAG | OPTO_LOG_MESSAGES_FLAG ) != OPTO_NO_ERROR_CODE )
 	{
 		goto ERROR_EXIT;
-	} /* if */
+	}
+	// fprintf( stdout, "...DetermineSystem\n" );
+	// if( uDetermineSystem( ) != OPTOTRAK_CERTUS_FLAG )
+	// {
+	// 	goto PROGRAM_COMPLETE;
+	// }
+	// fprintf( stdout, "...DetermineStroberConfiguration\n" );
+	// if( DetermineStroberConfiguration( &pdtDeviceHandles, &pdtDeviceHandlesInfo, &nDevices ) != OPTO_NO_ERROR_CODE )
+	// {
+	// 	goto ERROR_EXIT;
+	// }
+    // ApplicationStoreDeviceProperties( &pdtDevices, pdtDeviceHandlesInfo, nDevices );
+	// for( nCurDevice = 0; nCurDevice < nDevices; nCurDevice++ )
+	// {
+	// 	nMarkersToActivate = pdtDevices[nCurDevice].b3020Capability?
+	// 						   CERTUS_SAMPLE_3020_STROBER_MARKERSTOFIRE : CERTUS_SAMPLE_STROBER_MARKERSTOFIRE;
 
-	/*
-	 * Determine if this sample will run with the system attached.
-	 * This sample is intended for Optotrak Certus systems.
-	 */
-	fprintf( stdout, "...DetermineSystem\n" );
-	if( uDetermineSystem( ) != OPTOTRAK_CERTUS_FLAG )
+	// 	SetMarkersToActivateForDevice( &(pdtDevices[nCurDevice]), pdtDeviceHandlesInfo[nCurDevice].pdtHandle->nID, nMarkersToActivate );
+	// }
+	// fprintf( stdout, "\n" );
+	// for( nCurDevice = 0; nCurDevice < nDevices; nCurDevice++ )
+	// {
+	// 	if( GetDevicePropertiesFromSystem( &(pdtDeviceHandlesInfo[nCurDevice]) ) != OPTO_NO_ERROR_CODE )
+	// 	{
+	// 		goto ERROR_EXIT;
+	// 	}
+	// }
+
+	// if( ApplicationStoreDeviceProperties( &pdtDevices, pdtDeviceHandlesInfo, nDevices ) != OPTO_NO_ERROR_CODE )
+	// {
+	// 	goto ERROR_EXIT;
+	// }
+	// if( nDevices == 0 )
+	// {
+	// 	fprintf( stdout, ".........no devices detected.\n" );
+	// 	goto PROGRAM_COMPLETE;
+	// }
+	// ApplicationDetermineCollectionParameters( nDevices, pdtDevices, &dtSettings );
+
+	fprintf( stdout, "...OptotrakSetProcessingFlags\n" );
+    if( OptotrakSetProcessingFlags( OPTO_LIB_POLL_REAL_DATA |
+                                    OPTO_CONVERT_ON_HOST |
+                                    OPTO_RIGID_ON_HOST ) )
+    {
+        goto ERROR_EXIT;
+    }
+	fprintf( stdout, "...OptotrakLoadCameraParameters\n" );
+    if( OptotrakLoadCameraParameters( "standard" ) != OPTO_NO_ERROR_CODE )
 	{
-		goto PROGRAM_COMPLETE;
-	} /* if */
-
-    /*
-     * Strober Initialization
-     * Once communication has been initialized, the application must
-     * determine the strober configuration.
-     * The application retrieves device handles and all strober
-     * properties from the system.
-     */
-	fprintf( stdout, "...DetermineStroberConfiguration\n" );
-	if( DetermineStroberConfiguration( &pdtDeviceHandles, &pdtDeviceHandlesInfo, &nDevices ) != OPTO_NO_ERROR_CODE )
+		goto ERROR_EXIT;
+	}
+    fprintf( stdout, "...OptotrakSetStroberPortTable\n" );
+    if( OptotrakSetStroberPortTable( dtSettings.nMarkers - 1, 0, 0, 0 ) != OPTO_NO_ERROR_CODE )
 	{
 		goto ERROR_EXIT;
 	} /* if */
-
-	/*
-	 * check if any devices have been detected by the system
-	 */
-	if( nDevices == 0 )
+	if( dtSettings.nMarkers == 0 )
 	{
-		fprintf( stdout, ".........no devices detected.  Quitting program...\n" );
-		goto PROGRAM_COMPLETE;
-	} /* if */
+		fprintf( stdout, "Error: There are no markers to be activated.\n" );
+		goto ERROR_EXIT;
+	}
+	fprintf( stdout, "...OptotrakSetupCollection\n" );
+	fprintf( stdout, ".....%d, %.2f, %.0f, %d, %d, %d, %.2f, %.2f, %.0f, %.0f\n",
+								 dtSettings.nMarkers - 1,
+			                     dtSettings.fFrameFrequency,
+				                 dtSettings.fMarkerFrequency,
+					             dtSettings.nThreshold,
+						         dtSettings.nMinimumGain,
+							     dtSettings.nStreamData,
+								 dtSettings.fDutyCycle,
+								 dtSettings.fVoltage,
+								 dtSettings.fCollectionTime,
+								 dtSettings.fPreTriggerTime );
+    if( OptotrakSetupCollection( dtSettings.nMarkers - 1,
+			                     dtSettings.fFrameFrequency,
+				                 dtSettings.fMarkerFrequency,
+					             dtSettings.nThreshold,
+						         dtSettings.nMinimumGain,
+							     dtSettings.nStreamData,
+								 dtSettings.fDutyCycle,
+								 dtSettings.fVoltage,
+								 dtSettings.fCollectionTime,
+								 dtSettings.fPreTriggerTime,
+								 OPTOTRAK_NO_FIRE_MARKERS_FLAG | OPTOTRAK_BUFFER_RAW_FLAG | OPTOTRAK_SWITCH_AND_CONFIG_FLAG ) != OPTO_NO_ERROR_CODE )
+    {
+        goto ERROR_EXIT;
+    }
+
+    sleep( 1 );
+
+	fprintf( stdout, "...OptotrakActivateMarkers\n" );
+    if( OptotrakActivateMarkers( ) != OPTO_NO_ERROR_CODE )
+    {
+        goto ERROR_EXIT;
+    }
+	sleep( 1 );
+
+
 
     /*
-     * Now that all the device handles have been completely set up,
-     * the application can store all the device handle information in
-     * an internal data structure.  This will facilitate lookups when
-     * a property setting needs to be checked.
+     * Get frame of 3D data.
      */
-    ApplicationStoreDeviceProperties( &pdtDevices, pdtDeviceHandlesInfo, nDevices );
+
+	p3dData = (Position3d*)malloc( dtSettings.nMarkers * sizeof( Position3d ) );
+
+    for( nCurFrame = 0; nCurFrame < 1; nCurFrame++ )
+    {
+        fprintf( stdout, "\n" );
+        if( DataGetLatest3D( &uFrameNumber, &uElements, &uFlags, p3dData ) )
+        {
+            goto ERROR_EXIT;
+        }
+
+        fprintf( stdout, "Frame Number: %8u\n", uFrameNumber );
+        fprintf( stdout, "Elements    : %8u\n", uElements );
+        fprintf( stdout, "Flags       : 0x%04x\n", uFlags );
+        for( nCurMarker = 0; nCurMarker < dtSettings.nMarkers; nCurMarker++ )
+        {
+			DisplayMarker( nCurMarker + 1, p3dData[nCurMarker] );
+        } 
 
 
+    }
+    sleep(10);
 	/*
-     * Turn the beeper ON
-     */
-	for( i = 0; i < nDevices; i++ )
+	 * Stop the collection.
+	 */
+
+    if( OptotrakDeActivateMarkers() )
+    {
+        goto ERROR_EXIT;
+    } 
+	fprintf( stdout, "...OptotrakStopCollection\n" );
+	if( OptotrakStopCollection( ) != OPTO_NO_ERROR_CODE )
 	{
-		if ( pdtDevices[i].nBeeper )
-		{
-			fprintf( stdout, "...OptotrakDeviceHandleSetBeeper (ON)\n" );
-			if( OptotrakDeviceHandleSetBeeper( pdtDeviceHandlesInfo[i].pdtHandle->nID, BEEPER_STATE_ON ) != OPTO_NO_ERROR_CODE )
-			{
-				goto ERROR_EXIT;
-			} /* if */
-
-			/*
-			 * Wait 1 second
-			 */
-			fprintf( stdout, "...beeping for one second\n" );
-			sleep( 1 );
-
-			/*
-			 * Turn the beeper OFF
-			 */
-			fprintf( stdout, "...OptotrakDeviceHandleSetBeeper (OFF)\n" );
-			if( OptotrakDeviceHandleSetBeeper( pdtDeviceHandlesInfo[i].pdtHandle->nID, BEEPER_STATE_OFF ) != OPTO_NO_ERROR_CODE )
-			{
-				goto ERROR_EXIT;
-			} /* if */
-		} /* if */
-		else
-		{
-			fprintf( stdout, "...No beeper available on Device %.3d (ID %d)", (i + 1), pdtDeviceHandlesInfo[i].pdtHandle->nID );
-		} /* else */
-	} /* for */
-
+		goto ERROR_EXIT;
+	} 
 
 PROGRAM_COMPLETE:
     /*
@@ -477,28 +617,48 @@ PROGRAM_COMPLETE:
      */
 	fprintf( stdout, "\n" );
 	fprintf( stdout, "...TransputerShutdownSystem\n" );
-    OptotrakDeActivateMarkers( );
     TransputerShutdownSystem( );
 
-    sleep(5);
+	/*
+	 * free all memory
+	 */
+	if( pdtDeviceHandlesInfo )
+	{
+		for( i = 0; i < nDevices; i++ )
+		{
+			AllocateMemoryDeviceHandleProperties( &(pdtDeviceHandlesInfo[i].grProperties), 0 );
+		} /* for */
+	} /* if */
+	AllocateMemoryDeviceHandles( &pdtDeviceHandles, 0 );
+	AllocateMemoryDeviceHandlesInfo( &pdtDeviceHandlesInfo, pdtDeviceHandles, 0 );
+	free( p3dData );
+
 	return 0;
 
-
 ERROR_EXIT:
-	/*
-	 * Indicate that an error has occurred
-	 */
 	fprintf( stdout, "\nAn error has occurred during execution of the program.\n" );
     if( OptotrakGetErrorString( szNDErrorString, MAX_ERROR_STRING_LENGTH + 1 ) == 0 )
     {
         fprintf( stdout, szNDErrorString );
-    } /* if */
+    }
 
 	fprintf( stdout, "\n\n...TransputerShutdownSystem\n" );
 	OptotrakDeActivateMarkers( );
 	TransputerShutdownSystem( );
-    sleep(5);
+
+	if( pdtDeviceHandlesInfo )
+	{
+		for( i = 0; i < nDevices; i++ )
+		{
+			AllocateMemoryDeviceHandleProperties( &(pdtDeviceHandlesInfo[i].grProperties), 0 );
+		}
+	}
+	AllocateMemoryDeviceHandles( &pdtDeviceHandles, 0 );
+	AllocateMemoryDeviceHandlesInfo( &pdtDeviceHandlesInfo, pdtDeviceHandles, 0 );
+	free( p3dData );
 
     return 1;
 
+
 } 
+

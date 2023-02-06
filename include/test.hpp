@@ -28,7 +28,7 @@ using namespace Pylon;
 
 
 #define SAMPLE_MARKERFREQ	2500.0f
-#define SAMPLE_FRAMEFREQ	30.0f
+#define SAMPLE_FRAMEFREQ	200.0f
 #define SAMPLE_DUTYCYCLE	0.35f
 #define SAMPLE_VOLTAGE		7.0f
 #define SAMPLE_STREAMDATA	0
@@ -36,11 +36,8 @@ using namespace Pylon;
 #define CERTUS_SAMPLE_STROBER_MARKERSTOFIRE		2
 #define CERTUS_SAMPLE_3020_STROBER_MARKERSTOFIRE	6
 
-#define BEEPER_STATE_OFF	0
-#define BEEPER_STATE_ON		1
 
-
-static const uint32_t c_countOfImagesToGrab = 1;
+static const uint32_t c_countOfImagesToGrab = 10;
 static const size_t c_maxCamerasToUse = 4;
 
 struct ndicapi;
