@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pylon/PylonIncludes.h>
+#include <pylon/BaslerUniversalInstantCamera.h>
 #ifdef PYLON_WIN_BUILD
     #include <pylon/PylonGUI.h>
 #endif
@@ -22,6 +23,7 @@ extern "C"
 
 using namespace std;
 using namespace Pylon;
+using namespace Basler_UniversalCameraParams;
 
 
 

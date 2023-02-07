@@ -35,7 +35,7 @@ int Grab_MultipleCameras()
 
         // Create an array of instant cameras for the found devices and avoid exceeding a maximum number of devices.
         CInstantCameraArray cameras( min( devices.size(), c_maxCamerasToUse ) );
-
+        
         // Create and attach all Pylon Devices.
         for (size_t i = 0; i < cameras.GetSize(); ++i)
         {
@@ -69,7 +69,13 @@ int Grab_MultipleCameras()
             CParameter(cameras[i].GetNodeMap().GetNode("ShutterMode")).ToString() << " " <<
 
             endl;
+
+
+
+            
         }
+
+        
 
         // Starts grabbing for all cameras starting with index 0. The grabbing
         // is started for one camera after the other. That's why the images of all
@@ -108,6 +114,14 @@ int Grab_MultipleCameras()
 
                 // Now, the image data can be processed.
                 cout << "GrabSucceeded: " << ptrGrabResult->GrabSucceeded() << endl;
+                // cout << "BufferSize: " << ptrGrabResult->GetBufferSize() << endl; //size of image
+                cout << "?" << ptrGrabResult->GetTimeStamp() << endl;
+                cout << "?" << ptrGrabResult->GetImageNumber() << endl;
+                // cout << "?" << ptrGrabResult->GetImageSize() << endl;
+                cout << "?" << ptrGrabResult->GetNumberOfSkippedImages() << endl;
+                cout << "?" << ptrGrabResult->IsChunkDataAvailable() << endl;
+                // cout << "?" << ptrGrabResult->GetPayloadSize() << endl; //size  of image
+                cout << "?" << ptrGrabResult->GetID() << endl;
                 cout << "SizeX: " << ptrGrabResult->GetWidth() << endl;
                 cout << "SizeY: " << ptrGrabResult->GetHeight() << endl;
                 const uint8_t* pImageBuffer = (uint8_t*) ptrGrabResult->GetBuffer();
@@ -153,10 +167,122 @@ int Grab_MultipleCameras()
 
 void GigEcameraCreateWithIp()
 {
+    PylonInitialize();
+
     CTlFactory& TlFactory = CTlFactory::GetInstance();
     CDeviceInfo di;
-    di.SetIpAddress( "192.168.0.101");
-    CInstantCamera camera( TlFactory.CreateDevice( di ) );
+    di.SetIpAddress( "169.254.0.55");
+    CBaslerUniversalInstantCamera camera( TlFactory.CreateDevice( di ) );
+    
+    camera.Open(); //打开才能读参数
+
+    camera.ExposureTimeAbs.SetValue(20000.0);
+    camera.AcquisitionFrameRateEnable.SetValue(true);
+    camera.AcquisitionFrameRateAbs.SetValue(40.0);
+
+
+    // camera.ChunkModeActive.SetValue(true);
+    // camera.ChunkSelector.SetValue(ChunkSelector_Timestamp);
+    // camera.ChunkEnable.SetValue(true);
+    // camera.ChunkSelector.SetValue(ChunkSelector_Framecounter);
+    // camera.ChunkEnable.SetValue(true);
+    // camera.ChunkSelector.SetValue(ChunkSelector_Triggerinputcounter);
+    // camera.ChunkEnable.SetValue(true);
+
+            // Print the model name of the camera.
+    cout << "Using device " << 
+    camera.GetDeviceInfo().GetModelName() << " " <<
+    camera.GetDeviceInfo().GetIpAddress() << " " <<
+    camera.GetDeviceInfo().GetDeviceClass() <<  " " <<
+    camera.GetDeviceInfo().GetSerialNumber() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("OffsetX")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("OffsetY")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("ExposureTimeAbs")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("ExposureMode")).ToString() << " " <<
+    // CParameter(cameras[i].GetNodeMap().GetNode("ExposureStartDelayAbs")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("AcquisitionMode")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("AcquisitionFrameRateEnable")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("AcquisitionFrameRateAbs")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("Width")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("Height")).ToString() << " " <<
+    CEnumParameter(camera.GetNodeMap().GetNode("PixelFormat")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("TriggerSource")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("TriggerActivation")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("TriggerSelector")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("TriggerMode")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("ReadoutTimeAbs")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("ResultingFrameRateAbs")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("ShutterMode")).ToString() << " " <<
+
+    endl;
+    //init: Using device acA1300-60gmNIR 169.254.0.55 BaslerGigE 21752969 1 1 5000 Timed Continuous 0 10 1280 1024 Mono8 Line1 RisingEdge FrameStart Off 14705 68.0041 Global 
+    //set/: Using device acA1300-60gmNIR 169.254.0.55 BaslerGigE 21752969 1 1 5000 Timed Continuous 1 40 1280 1024 Mono8 Line1 RisingEdge FrameStart Off 14705 39.9904 Global 
+    //exposure time start
+    //1 3020400699620
+    //2 3020425705700
+    //3 3020450711780
+
+    // cout << camera.GevTimestampTickFrequency() << endl; //1000000000
+
+    camera.StartGrabbing();
+    // cout << std::chrono::system_clock::now().time_since_epoch().count() << endl; //1675776932585
+    // camera.GevTimestampControlLatch.Execute();
+    // cout << camera.GevTimestampValue.GetValue() << endl; //4867797
+    // cout << std::chrono::system_clock::now().time_since_epoch().count() << endl; //1675776932588
+
+        // This smart pointer will receive the grab result data.
+
+    CBaslerUniversalGrabResultPtr ptrGrabResult;
+    cout << "?" << endl;
+    for (uint32_t i = 0; i < c_countOfImagesToGrab && camera.IsGrabbing(); ++i)
+    {
+        // cout << "1 " << std::chrono::system_clock::now().time_since_epoch().count() << endl; 
+        camera.RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_ThrowException ); // 阻塞
+        // camera.GevTimestampControlLatch.Execute(); 
+        // cout << camera.GevTimestampValue.GetValue() << endl; //4867864  4867889 4867914 4867939
+        //                                                      //4867799  4867824 4867849 4867874
+        // cout << "2 " << std::chrono::system_clock::now().time_since_epoch().count() << endl; //1675776932656 1675776932681 1675776932706 1675776932731
+
+
+        if (ptrGrabResult->GrabSucceeded())
+        {
+            intptr_t cameraContextValue = ptrGrabResult->GetCameraContext();
+            cout << "Camera " << cameraContextValue << ": " << camera.GetDeviceInfo().GetModelName() << endl;
+            // cout << "BufferSize: " << ptrGrabResult->GetBufferSize() << endl; //size of image ptrGrabResult->GetImageSize() ptrGrabResult->GetPayloadSize()
+            cout << "Exposure start ts: " << ptrGrabResult->GetTimeStamp() << endl;
+            cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << endl;
+            // cout << "? " << ptrGrabResult->GetNumberOfSkippedImages() << endl;
+            
+            // const uint8_t* pImageBuffer = (uint8_t*) ptrGrabResult->GetBuffer();
+            // cout << "Gray value of first pixel: " << (uint32_t) pImageBuffer[0] << endl << endl;
+
+            // cout << "Exposure start ts: " << ptrGrabResult->ChunkTimestamp.GetValue() << endl;
+            // cout << "Framecount: " << ptrGrabResult->ChunkFramecounter.GetValue() << endl;
+            // cout << "Trigger input: " << ptrGrabResult->ChunkTriggerinputcounter.GetValue() << endl;
+            auto t1 = std::chrono::steady_clock::now();
+
+            CImagePersistence::Save(ImageFileFormat_Bmp, 
+                                    String_t(std::string("../k20/" + to_string(ptrGrabResult->GetImageNumber()) + ".bmp").c_str()),
+                                    ptrGrabResult);
+            auto t2 = std::chrono::steady_clock::now();
+            double dr_ms = std::chrono::duration<double,std::milli>(t2-t1).count();
+            cout << "save time :" << dr_ms << endl;
+
+
+        }
+        else
+        {
+            cout << "Error: " << std::hex << ptrGrabResult->GetErrorCode() << std::dec << " " << ptrGrabResult->GetErrorDescription() << endl;
+        }
+    }
+
+    cout << "close" << endl;
+
+    sleep(10);
+    camera.Close();
+
+    PylonTerminate();
+
 }
 
 
@@ -250,7 +376,7 @@ int aurora_test()
 
     if (device != nullptr)
     {
-        const char* reply = ndiCo2mmand(device, "VER:4");
+        const char* reply = ndiCommand(device, "VER:4");
         fprintf(logg, "------ system version ------ \n %s", reply);
 
 
@@ -568,9 +694,10 @@ int certus_test()
     {
         goto ERROR_EXIT;
     }
-	sleep( 1 );
+	sleep( 1);
 
-
+    cerr << endl << "Activate Markers.. Press enter to exit." << endl;
+    while (cin.get() != '\n');
 
     /*
      * Get frame of 3D data.
