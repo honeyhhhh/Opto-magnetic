@@ -5,7 +5,72 @@
 #include <windows.h>
 #include <chrono>
 #include <iostream>
+
 FILE *logg = NULL;
+
+enum MyEvents
+{
+    eMyExposureEndEvent = 100,
+    eMyFrameStartOvertrigger = 200,
+    eMyFrameStartEvent = 300,
+    eMyAcquisitionStartEvent = 400
+    // More events can be added here.
+};
+
+class CCameraEventPrinter : public CCameraEventHandler
+{
+public:
+    virtual void OnCameraEvent( CInstantCamera& camera, intptr_t userProvidedId, GenApi::INode* pNode )
+    {
+        std::cout << "OnCameraEvent event for device " << camera.GetDeviceInfo().GetModelName() << std::endl;
+        std::cout << "User provided ID: " << userProvidedId << std::endl;
+        std::cout << "Event data node name: " << pNode->GetName() << std::endl;
+        CParameter value( pNode );
+        if (value.IsValid())
+        {
+            std::cout << "Event node data: " << value.ToString() << std::endl;
+        }
+        std::cout << std::endl;
+    }
+};
+
+class CSampleCameraEventHandler : public CBaslerUniversalCameraEventHandler
+{
+public:
+    // Only very short processing tasks should be performed by this method. Otherwise, the event notification will block the
+    // processing of images.
+    virtual void OnCameraEvent( CBaslerUniversalInstantCamera& camera, intptr_t userProvidedId, GenApi::INode* /* pNode */ )
+    {
+        // std::cout << std::endl;
+        switch (userProvidedId)
+        {
+            case eMyExposureEndEvent: // Exposure End event
+                cout << "Exposure End event. FrameID: " << camera.ExposureEndEventFrameID.GetValue() << " Timestamp: " << camera.ExposureEndEventTimestamp.GetValue() << std::endl;
+                break;
+            case eMyFrameStartOvertrigger:
+                cout << "FrameStartOvertrigger event. Timestamp: " << camera.FrameStartOvertriggerEventTimestamp.GetValue() << std::endl;
+                break;
+            case eMyFrameStartEvent:
+                cout << "FrameStart event. Timestamp: " << camera.FrameStartEventTimestamp.GetValue() << std::endl;
+                break;
+            case eMyAcquisitionStartEvent:
+                cout << "AcquisitionStart event. Timestamp: " << camera.AcquisitionStartEventTimestamp.GetValue() << std::endl;
+                break;
+
+        }
+    }
+};
+//Example of an image event handler.
+class CSampleImageEventHandler : public CImageEventHandler
+{
+public:
+    virtual void OnImageGrabbed( CInstantCamera& /*camera*/, const CGrabResultPtr& /*ptrGrabResult*/ )
+    {
+        // cout << "CSampleImageEventHandler::OnImageGrabbed called." << std::endl;
+        // cout << std::endl;
+        // cout << std::endl;
+    }
+};
 
 static void sleep( unsigned int uSec )
 {
@@ -167,9 +232,9 @@ int Grab_MultipleCameras()
 
 void GigEcameraCreateWithIp()
 {
-    sleep(10);
+    // sleep(10);
     // std::cout is not use
-    logg = fopen("../log_k10.txt", "w");
+    logg = fopen("../log_kk.txt", "w");
     if (logg == NULL)
     {
         std::cout << "failed create log" << endl;
@@ -182,12 +247,47 @@ void GigEcameraCreateWithIp()
     CDeviceInfo di;
     di.SetIpAddress( "169.254.0.55");
     CBaslerUniversalInstantCamera camera( TlFactory.CreateDevice( di ) );
+
+
+
+
+    // Create an example event handler. In the present case, we use one single camera handler for handling multiple camera events.
+    // The handler prints a message for each received event.
+    CSampleCameraEventHandler* pHandler1 = new CSampleCameraEventHandler;
+    // Create another more generic event handler printing out information about the node for which an event callback
+    // is fired.
+    // CCameraEventPrinter* pHandler2 = new CCameraEventPrinter;    // For demonstration purposes only, register another image event handler.
+    camera.RegisterImageEventHandler( new CSampleImageEventHandler, RegistrationMode_Append, Cleanup_Delete );
+    // Camera event processing must be activated first, the default is off.
+    camera.GrabCameraEvents = true;
+
+
+
+
     
     camera.Open(); //打开才能读参数
-
-    camera.ExposureTimeAbs.SetValue(10000.0);
+    // Check if the device supports events.
+    if (!camera.EventSelector.IsWritable())
+    {
+            throw RUNTIME_EXCEPTION( "The device doesn't support events." );
+    }
+    camera.ExposureTimeAbs.TrySetValue(10000.0);
     camera.AcquisitionFrameRateEnable.SetValue(true);
     camera.AcquisitionFrameRateAbs.SetValue(40.0);
+
+    // camera.MaxNumQueuedBuffer.SetToMinimum();
+    // camera.MaxNumGrabResults.SetToMinimum();
+    // camera.MaxNumBuffer.SetToMaximum();
+    // camera.OutputQueueSize = 1;
+    camera.RegisterCameraEventHandler( pHandler1, "ExposureEndEventData", eMyExposureEndEvent, RegistrationMode_ReplaceAll, Cleanup_None );
+    camera.RegisterCameraEventHandler( pHandler1, "FrameStartOvertriggerEventTimestamp", eMyFrameStartOvertrigger, RegistrationMode_Append, Cleanup_None );
+    camera.RegisterCameraEventHandler( pHandler1, "FrameStartEventTimestamp", eMyFrameStartEvent, RegistrationMode_Append, Cleanup_None );
+    camera.RegisterCameraEventHandler( pHandler1, "AcquisitionStartEventTimestamp", eMyAcquisitionStartEvent, RegistrationMode_Append, Cleanup_None );
+
+    // camera.RegisterCameraEventHandler( pHandler2, "ExposureEndEventFrameID", eMyExposureEndEvent, RegistrationMode_Append, Cleanup_None );
+    // camera.RegisterCameraEventHandler( pHandler2, "ExposureEndEventTimestamp", eMyExposureEndEvent, RegistrationMode_Append, Cleanup_None );
+    
+
 
 
     // camera.ChunkModeActive.SetValue(true);
@@ -198,9 +298,12 @@ void GigEcameraCreateWithIp()
     // camera.ChunkSelector.SetValue(ChunkSelector_Triggerinputcounter);
     // camera.ChunkEnable.SetValue(true);
 
-    fprintf(logg, "exposure time : %s\n", CParameter(camera.GetNodeMap().GetNode("ExposureTimeAbs")).ToString().c_str());
-    fprintf(logg, "frame rate: %s\n", CParameter(camera.GetNodeMap().GetNode("ResultingFrameRateAbs")).ToString().c_str());
-    fprintf(logg, "readout time: %s\n", CParameter(camera.GetNodeMap().GetNode("ReadoutTimeAbs")).ToString().c_str());
+
+
+
+    // fprintf(logg, "exposure time : %s\n", CParameter(camera.GetNodeMap().GetNode("ExposureTimeAbs")).ToString().c_str());
+    // fprintf(logg, "frame rate: %s\n", CParameter(camera.GetNodeMap().GetNode("ResultingFrameRateAbs")).ToString().c_str());
+    // fprintf(logg, "readout time: %s\n", CParameter(camera.GetNodeMap().GetNode("ReadoutTimeAbs")).ToString().c_str());
     // Print the model name of the camera.
     cout << "Using device " << 
     camera.GetDeviceInfo().GetModelName() << " " <<
@@ -210,6 +313,9 @@ void GigEcameraCreateWithIp()
     CParameter(camera.GetNodeMap().GetNode("OffsetX")).ToString() << " " <<
     CParameter(camera.GetNodeMap().GetNode("OffsetY")).ToString() << " " <<
     CParameter(camera.GetNodeMap().GetNode("ExposureTimeAbs")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("ExposureTimeRaw")).ToString() << " " <<
+    CParameter(camera.GetNodeMap().GetNode("ExposureTimeBaseAbs")).IsValid() << " " <<
+
     CParameter(camera.GetNodeMap().GetNode("ExposureMode")).ToString() << " " <<
     // CParameter(cameras[i].GetNodeMap().GetNode("ExposureStartDelayAbs")).ToString() << " " <<
     CParameter(camera.GetNodeMap().GetNode("AcquisitionMode")).ToString() << " " <<
@@ -225,77 +331,161 @@ void GigEcameraCreateWithIp()
     CParameter(camera.GetNodeMap().GetNode("ReadoutTimeAbs")).ToString() << " " <<
     CParameter(camera.GetNodeMap().GetNode("ResultingFrameRateAbs")).ToString() << " " <<
     CParameter(camera.GetNodeMap().GetNode("ShutterMode")).ToString() << " " <<
-
+    camera.MaxNumBuffer.GetValue() << " " <<
+    camera.NumReadyBuffers.GetValue() << " " <<
+    camera.NumEmptyBuffers.GetValue() << " " <<
+    camera.MaxNumGrabResults.GetValue() << " " <<
+    camera.MaxNumQueuedBuffer.GetValue() << " " <<
+    camera.OutputQueueSize.GetValue() << " " <<
     endl;
     //init: Using device acA1300-60gmNIR 169.254.0.55 BaslerGigE 21752969 1 1 5000 Timed Continuous 0 10 1280 1024 Mono8 Line1 RisingEdge FrameStart Off 14705 68.0041 Global 
     //set/: Using device acA1300-60gmNIR 169.254.0.55 BaslerGigE 21752969 1 1 5000 Timed Continuous 1 40 1280 1024 Mono8 Line1 RisingEdge FrameStart Off 14705 39.9904 Global 
 
     // cout << camera.GevTimestampTickFrequency() << endl; //1000000000
-    fprintf(logg, "\nstart grabbing(system): %llu\n\n", std::chrono::system_clock::now().time_since_epoch().count());
+    // fprintf(logg, "\nstart grabbing(system): %llu\n\n", std::chrono::system_clock::now().time_since_epoch().count());
 
-    camera.StartGrabbing();
-    // cout << std::chrono::system_clock::now().time_since_epoch().count() << endl; //1675776932585
+
+
+
+    if (camera.EventSelector.TrySetValue( EventSelector_ExposureEnd ))
+    {   // Enable it.
+        if (!camera.EventNotification.TrySetValue( EventNotification_On ))
+        {
+                // scout-f, scout-g, and aviator GigE cameras use a different value.
+            camera.EventNotification.SetValue( EventNotification_GenICamEvent );
+        }
+    }
+   if (camera.EventSelector.TrySetValue( EventSelector_FrameStartOvertrigger ))
+    {   // Enable it.
+        if (!camera.EventNotification.TrySetValue( EventNotification_On ))
+        {
+                // scout-f, scout-g, and aviator GigE cameras use a different value.
+            camera.EventNotification.SetValue( EventNotification_GenICamEvent );
+        }
+    }
+   if (camera.EventSelector.TrySetValue( EventSelector_FrameStart ))
+    {   // Enable it.
+        if (!camera.EventNotification.TrySetValue( EventNotification_On ))
+        {
+                // scout-f, scout-g, and aviator GigE cameras use a different value.
+            camera.EventNotification.SetValue( EventNotification_GenICamEvent );
+        }
+    }
+   if (camera.EventSelector.TrySetValue( EventSelector_AcquisitionStart ))
+    {   // Enable it.
+        if (!camera.EventNotification.TrySetValue( EventNotification_On ))
+        {
+                // scout-f, scout-g, and aviator GigE cameras use a different value.
+            camera.EventNotification.SetValue( EventNotification_GenICamEvent );
+        }
+    }
     camera.GevTimestampControlLatch.Execute();
+    cout << "before grab : " << camera.GevTimestampValue.GetValue() << endl;
+    camera.StartGrabbing(c_countOfImagesToGrab);
+    camera.GevTimestampControlLatch.Execute();
+    cout << "start grab : " << camera.GevTimestampValue.GetValue() << endl;
+    // cout << std::chrono::system_clock::now().time_since_epoch().count() << endl; //1675776932585
+    // camera.GevTimestampControlLatch.Execute();
     // cout << camera.GevTimestampValue.GetValue() << endl; //after StartGrabbing 4867797
     // cout << std::chrono::system_clock::now().time_since_epoch().count() << endl; //1675776932588
-    fprintf(logg, "after start grabbing(camera): %lld\n", camera.GevTimestampValue.GetValue());
-    fprintf(logg, "after start grabbing(system): %llu\n", std::chrono::system_clock::now().time_since_epoch().count());
+    // fprintf(logg, "after start grabbing(camera): %lld\n", camera.GevTimestampValue.GetValue());
+    // fprintf(logg, "after start grabbing(system): %llu\n", std::chrono::system_clock::now().time_since_epoch().count());
 
     // This smart pointer will receive the grab result data.
 
+
+
+
     CBaslerUniversalGrabResultPtr ptrGrabResult;
-    for (uint32_t i = 0; i < 50 && camera.IsGrabbing(); ++i)
+
+    while (camera.IsGrabbing())
     {
-        // cout << "1 " << std::chrono::system_clock::now().time_since_epoch().count() << endl; 
-        camera.RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_ThrowException ); // 阻塞
+            // Execute the software trigger. Wait up to 1000 ms for the camera to be ready for trigger.
+        // if (camera.WaitForFrameTriggerReady( 1000, TimeoutHandling_ThrowException ))
+        // {
+        //         camera.ExecuteSoftwareTrigger();
+        // }
+
+        // Retrieve grab results and notify the camera event and image event handlers.
+        camera.RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_ThrowException );
         camera.GevTimestampControlLatch.Execute(); 
-        // cout << "after RetrieveResult: " << camera.GevTimestampValue.GetValue() << endl; //after RetrieveResult: 4867864  4867889 4867914 4867939
-        //                                                      //when Exposure start : 4867799  4867824 4867849 4867874
-        // cout << "system " << std::chrono::system_clock::now().time_since_epoch().count() << endl; //1675776932656 1675776932681 1675776932706 1675776932731
-        fprintf(logg, "after RetrieveResult(camera): %lld\n", camera.GevTimestampValue.GetValue());
-        fprintf(logg, "after RetrieveResult(system): %llu\n", std::chrono::system_clock::now().time_since_epoch().count());
-
-
+        cout << "after RetrieveResult: " << camera.GevTimestampValue.GetValue() << endl; //after RetrieveResult: 4867864  4867889 4867914 4867939
         if (ptrGrabResult->GrabSucceeded())
         {
-            intptr_t cameraContextValue = ptrGrabResult->GetCameraContext();
-            // cout << "Camera " << cameraContextValue << ": " << camera.GetDeviceInfo().GetModelName() << endl;
-            // cout << "BufferSize: " << ptrGrabResult->GetBufferSize() << endl; //size of image ptrGrabResult->GetImageSize() ptrGrabResult->GetPayloadSize()
-            // cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << "\tExposure start ts: " << ptrGrabResult->GetTimeStamp() << endl;
-            fprintf(logg, "Imagenum: %lld\tExposure start ts: %lld\n", ptrGrabResult->GetImageNumber(), ptrGrabResult->GetTimeStamp());
-            // cout << "? " << ptrGrabResult->GetNumberOfSkippedImages() << endl;
-            
-            // const uint8_t* pImageBuffer = (uint8_t*) ptrGrabResult->GetBuffer();
-            // cout << "Gray value of first pixel: " << (uint32_t) pImageBuffer[0] << endl << endl;
-
-            // cout << "Exposure start ts: " << ptrGrabResult->ChunkTimestamp.GetValue() << endl;
-            // cout << "Framecount: " << ptrGrabResult->ChunkFramecounter.GetValue() << endl;
-            // cout << "Trigger input: " << ptrGrabResult->ChunkTriggerinputcounter.GetValue() << endl;
-            auto t1 = std::chrono::steady_clock::now();
-
-            CImagePersistence::Save(ImageFileFormat_Bmp, 
-                                    String_t(std::string("../k5/" + to_string(ptrGrabResult->GetImageNumber()) + ".bmp").c_str()),
-                                    ptrGrabResult);
-            auto t2 = std::chrono::steady_clock::now();
-            double dr_ms = std::chrono::duration<double,std::milli>(t2-t1).count();
-            // cout << "save time :" << dr_ms << endl;
-            fprintf(logg, "save using time :%llf\n", dr_ms);
-
-
-        }
-        else
-        {
-            cout << "Error: " << std::hex << ptrGrabResult->GetErrorCode() << std::dec << " " << ptrGrabResult->GetErrorDescription() << endl;
-        }
+            cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << "\tExposure start ts: " << ptrGrabResult->GetTimeStamp() << endl;
+        }            
     }
+    // CGrabResultPtr ptrGrabResult;
+
+    // for (uint32_t i = 0; i < 5 && camera.IsGrabbing(); ++i)
+    // {
+    //     // fprintf(logg, "number of buffer ready: %lld\t%llu\t%llu\n",camera.NumReadyBuffers.GetValue(), camera.MaxNumBuffer.GetValue(),camera.NumEmptyBuffers.GetValue());
+
+    //     // cout << "1 " << std::chrono::system_clock::now().time_since_epoch().count() << endl; 
+    //     camera.RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_ThrowException ); // 阻塞
+    //     camera.GevTimestampControlLatch.Execute(); 
+    //     cout << "after RetrieveResult: " << camera.GevTimestampValue.GetValue() << endl; //after RetrieveResult: 4867864  4867889 4867914 4867939
+    //     //                                                                                  //when Exposure start : 4867799  4867824 4867849 4867874
+    //     // cout << "system " << std::chrono::system_clock::now().time_since_epoch().count() << endl; //1675776932656 1675776932681 1675776932706 1675776932731
+    //     // fprintf(logg, "after RetrieveResult(camera): %lld\n", camera.GevTimestampValue.GetValue());
+    //     // fprintf(logg, "after RetrieveResult(system): %llu\n", std::chrono::system_clock::now().time_since_epoch().count());
+
+
+    //     if (ptrGrabResult->GrabSucceeded())
+    //     {
+    //         intptr_t cameraContextValue = ptrGrabResult->GetCameraContext();
+    //         // cout << "Camera " << cameraContextValue << ": " << camera.GetDeviceInfo().GetModelName() << endl;
+    //         // cout << "BufferSize: " << ptrGrabResult->GetBufferSize() << endl; //size of image ptrGrabResult->GetImageSize() ptrGrabResult->GetPayloadSize()
+    //         cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << "\tExposure start ts: " << ptrGrabResult->GetTimeStamp() << endl;
+    //         // fprintf(logg, "Imagenum: %lld\tExposure start ts: %lld\tNumberOfSkippedImages :%lld\n", ptrGrabResult->GetImageNumber(), ptrGrabResult->GetTimeStamp(), ptrGrabResult->GetNumberOfSkippedImages());
+            
+    //         // const uint8_t* pImageBuffer = (uint8_t*) ptrGrabResult->GetBuffer();
+    //         // cout << "Gray value of first pixel: " << (uint32_t) pImageBuffer[0] << endl << endl;
+
+    //         // cout << "Exposure start ts: " << ptrGrabResult->ChunkTimestamp.GetValue() << endl;
+    //         // cout << "Framecount: " << ptrGrabResult->ChunkFramecounter.GetValue() << endl;
+    //         // cout << "Trigger input: " << ptrGrabResult->ChunkTriggerinputcounter.GetValue() << endl;
+    //         // fprintf(logg, "Framecount: %lld\tTrigger inputs: %lld\n", ptrGrabResult->ChunkFramecounter.GetValue(), ptrGrabResult->ChunkTriggerinputcounter.GetValue());
+
+
+    //         // auto t1 = std::chrono::steady_clock::now();
+    //         // CImagePersistence::Save(ImageFileFormat_Bmp, 
+    //         //                         String_t(std::string("../k5/" + to_string(ptrGrabResult->GetImageNumber()) + ".bmp").c_str()),
+    //         //                         ptrGrabResult);
+    //         // auto t2 = std::chrono::steady_clock::now();
+    //         // double dr_ms = std::chrono::duration<double,std::milli>(t2-t1).count();
+    //         // // cout << "save time :" << dr_ms << endl;
+    //         // fprintf(logg, "save using time :%llf\n", dr_ms);
+
+
+    //         // int nBuffersInQueue = 0;
+    //         // while (camera.RetrieveResult( 0, ptrGrabResult, TimeoutHandling_Return ))
+    //         // {
+    //         //     nBuffersInQueue++;
+    //         // }
+    //         // cout << "Retrieved " << nBuffersInQueue << " grab results from output queue." << endl << endl;
+
+            
+
+    //     }
+    //     else
+    //     {
+    //         cout << "Error: " << std::hex << ptrGrabResult->GetErrorCode() << std::dec << " " << ptrGrabResult->GetErrorDescription() << endl;
+    //     }
+    // }
+
+    camera.EventSelector.SetValue( EventSelector_ExposureEnd );
+    camera.EventNotification.SetValue( EventNotification_Off );
+
 
     cout << "close" << endl;
 
-    sleep(10);
     camera.Close();
+    fclose(logg);
 
     PylonTerminate();
-
+    // cerr << endl << " Press enter to exit." << endl;
+    // while (cin.get() != '\n');
 }
 
 

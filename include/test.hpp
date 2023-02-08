@@ -6,6 +6,7 @@
 #include <string.h>
 #include <pylon/PylonIncludes.h>
 #include <pylon/BaslerUniversalInstantCamera.h>
+#include <pylon/CameraEventHandler.h>
 #ifdef PYLON_WIN_BUILD
     #include <pylon/PylonGUI.h>
 #endif

@@ -1,0 +1,204 @@
+begin basler test
+exposure time : 20000
+frame rate: 39.9904
+readout time: 14705
+
+start grabbing(system): 16758235563395051
+
+after start grabbing(camera): 1895487578890
+after start grabbing(system): 16758235563624175
+after RetrieveResult(camera): 1895571426680
+after RetrieveResult(system): 16758235564466802
+Imagenum: 1	Exposure start ts: 1895506099950
+save using time :7.149000
+after RetrieveResult(camera): 1895596646280
+after RetrieveResult(system): 16758235564714652
+Imagenum: 2	Exposure start ts: 1895531106030
+save using time :4.749200
+after RetrieveResult(camera): 1895621117610
+after RetrieveResult(system): 16758235564963951
+Imagenum: 3	Exposure start ts: 1895556112110
+save using time :4.591600
+after RetrieveResult(camera): 1895646164400
+after RetrieveResult(system): 16758235565210503
+Imagenum: 4	Exposure start ts: 1895581118190
+save using time :5.072600
+after RetrieveResult(camera): 1895671043940
+after RetrieveResult(system): 16758235565459274
+Imagenum: 5	Exposure start ts: 1895606124270
+save using time :4.908600
+after RetrieveResult(camera): 1895696175340
+after RetrieveResult(system): 16758235565714538
+Imagenum: 6	Exposure start ts: 1895631130350
+save using time :4.684900
+after RetrieveResult(camera): 1895721056350
+after RetrieveResult(system): 16758235565949964
+Imagenum: 7	Exposure start ts: 1895656136430
+save using time :4.314700
+after RetrieveResult(camera): 1895746334030
+after RetrieveResult(system): 16758235566208293
+Imagenum: 8	Exposure start ts: 1895681142510
+save using time :19.454200
+after RetrieveResult(camera): 1895771441560
+after RetrieveResult(system): 16758235566465039
+Imagenum: 9	Exposure start ts: 1895706148590
+save using time :6.486700
+after RetrieveResult(camera): 1895796501400
+after RetrieveResult(system): 16758235566717527
+Imagenum: 10	Exposure start ts: 1895731154670
+save using time :4.393100
+after RetrieveResult(camera): 1895821476280
+after RetrieveResult(system): 16758235566963622
+Imagenum: 11	Exposure start ts: 1895756160750
+save using time :4.261600
+after RetrieveResult(camera): 1895846488240
+after RetrieveResult(system): 16758235567217503
+Imagenum: 12	Exposure start ts: 1895781166830
+save using time :4.796800
+after RetrieveResult(camera): 1895871265250
+after RetrieveResult(system): 16758235567452109
+Imagenum: 13	Exposure start ts: 1895806172910
+save using time :4.191300
+after RetrieveResult(camera): 1895896533220
+after RetrieveResult(system): 16758235567713270
+Imagenum: 14	Exposure start ts: 1895831178990
+save using time :4.602700
+after RetrieveResult(camera): 1895921091960
+after RetrieveResult(system): 16758235567964081
+Imagenum: 15	Exposure start ts: 1895856185070
+save using time :4.351400
+after RetrieveResult(camera): 1895946461070
+after RetrieveResult(system): 16758235568217415
+Imagenum: 16	Exposure start ts: 1895881191150
+save using time :5.062700
+after RetrieveResult(camera): 1895971354840
+after RetrieveResult(system): 16758235568461859
+Imagenum: 17	Exposure start ts: 1895906197230
+save using time :4.381100
+after RetrieveResult(camera): 1895996174940
+after RetrieveResult(system): 16758235568706806
+Imagenum: 18	Exposure start ts: 1895931203310
+save using time :4.514800
+after RetrieveResult(camera): 1896021482600
+after RetrieveResult(system): 16758235568958208
+Imagenum: 19	Exposure start ts: 1895956209390
+save using time :8.526300
+after RetrieveResult(camera): 1896046283250
+after RetrieveResult(system): 16758235569206563
+Imagenum: 20	Exposure start ts: 1895981215470
+save using time :8.221300
+after RetrieveResult(camera): 1896071211960
+after RetrieveResult(system): 16758235569466400
+Imagenum: 21	Exposure start ts: 1896006221550
+save using time :4.165000
+after RetrieveResult(camera): 1896096160600
+after RetrieveResult(system): 16758235569710175
+Imagenum: 22	Exposure start ts: 1896031227630
+save using time :4.739000
+after RetrieveResult(camera): 1896121566770
+after RetrieveResult(system): 16758235569964209
+Imagenum: 23	Exposure start ts: 1896056233710
+save using time :4.240400
+after RetrieveResult(camera): 1896146142960
+after RetrieveResult(system): 16758235570199727
+Imagenum: 24	Exposure start ts: 1896081239790
+save using time :5.675300
+after RetrieveResult(camera): 1896171365280
+after RetrieveResult(system): 16758235570452602
+Imagenum: 25	Exposure start ts: 1896106245870
+save using time :5.620200
+after RetrieveResult(camera): 1896196652870
+after RetrieveResult(system): 16758235570719930
+Imagenum: 26	Exposure start ts: 1896131251950
+save using time :4.710300
+after RetrieveResult(camera): 1896221186040
+after RetrieveResult(system): 16758235570961172
+Imagenum: 27	Exposure start ts: 1896156258030
+save using time :4.391100
+after RetrieveResult(camera): 1896246410120
+after RetrieveResult(system): 16758235571202299
+Imagenum: 28	Exposure start ts: 1896181264110
+save using time :5.148400
+after RetrieveResult(camera): 1896271429420
+after RetrieveResult(system): 16758235571456345
+Imagenum: 29	Exposure start ts: 1896206270190
+save using time :4.175000
+after RetrieveResult(camera): 1896296656160
+after RetrieveResult(system): 16758235571719141
+Imagenum: 30	Exposure start ts: 1896231276270
+save using time :4.977100
+after RetrieveResult(camera): 1896321395000
+after RetrieveResult(system): 16758235571953466
+Imagenum: 31	Exposure start ts: 1896256282350
+save using time :4.397300
+after RetrieveResult(camera): 1896346404300
+after RetrieveResult(system): 16758235572212464
+Imagenum: 32	Exposure start ts: 1896281288430
+save using time :5.041000
+after RetrieveResult(camera): 1896371789470
+after RetrieveResult(system): 16758235572467495
+Imagenum: 33	Exposure start ts: 1896306294510
+save using time :4.635300
+after RetrieveResult(camera): 1896396527570
+after RetrieveResult(system): 16758235572714760
+Imagenum: 34	Exposure start ts: 1896331300590
+save using time :4.870000
+after RetrieveResult(camera): 1896421396260
+after RetrieveResult(system): 16758235572966320
+Imagenum: 35	Exposure start ts: 1896356306670
+save using time :4.517000
+after RetrieveResult(camera): 1896446468560
+after RetrieveResult(system): 16758235573206490
+Imagenum: 36	Exposure start ts: 1896381312750
+save using time :4.798700
+after RetrieveResult(camera): 1896471758850
+after RetrieveResult(system): 16758235573462319
+Imagenum: 37	Exposure start ts: 1896406318830
+save using time :6.159300
+after RetrieveResult(camera): 1896496337120
+after RetrieveResult(system): 16758235573704645
+Imagenum: 38	Exposure start ts: 1896431324910
+save using time :4.583300
+after RetrieveResult(camera): 1896521630400
+after RetrieveResult(system): 16758235573963668
+Imagenum: 39	Exposure start ts: 1896456330990
+save using time :13.746500
+after RetrieveResult(camera): 1896546294030
+after RetrieveResult(system): 16758235574203992
+Imagenum: 40	Exposure start ts: 1896481337070
+save using time :4.157600
+after RetrieveResult(camera): 1896571497150
+after RetrieveResult(system): 16758235574459589
+Imagenum: 41	Exposure start ts: 1896506343150
+save using time :10.453800
+after RetrieveResult(camera): 1896596304790
+after RetrieveResult(system): 16758235574707593
+Imagenum: 42	Exposure start ts: 1896531349230
+save using time :4.285700
+after RetrieveResult(camera): 1896621707610
+after RetrieveResult(system): 16758235574966458
+Imagenum: 43	Exposure start ts: 1896556355310
+save using time :4.636900
+after RetrieveResult(camera): 1896646593690
+after RetrieveResult(system): 16758235575219060
+Imagenum: 44	Exposure start ts: 1896581361390
+save using time :4.681100
+after RetrieveResult(camera): 1896671598530
+after RetrieveResult(system): 16758235575464563
+Imagenum: 45	Exposure start ts: 1896606367470
+save using time :4.132900
+after RetrieveResult(camera): 1896696344670
+after RetrieveResult(system): 16758235575702272
+Imagenum: 46	Exposure start ts: 1896631373550
+save using time :4.882100
+after RetrieveResult(camera): 1896721354530
+after RetrieveResult(system): 16758235575952644
+Imagenum: 47	Exposure start ts: 1896656379630
+save using time :4.083100
+after RetrieveResult(camera): 1896746399550
+after RetrieveResult(system): 16758235576217496
+Imagenum: 48	Exposure start ts: 1896681385710
+save using time :4.400600
+after RetrieveResult(camera): 1896771584720
+after RetrieveResult(system): 16758235576464829
+Imagenum: 49	Expos
