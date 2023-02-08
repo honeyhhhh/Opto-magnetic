@@ -167,6 +167,15 @@ int Grab_MultipleCameras()
 
 void GigEcameraCreateWithIp()
 {
+    sleep(10);
+    // std::cout is not use
+    logg = fopen("../log_k10.txt", "w");
+    if (logg == NULL)
+    {
+        std::cout << "failed create log" << endl;
+    }
+    fprintf(logg, "begin basler test\n");
+
     PylonInitialize();
 
     CTlFactory& TlFactory = CTlFactory::GetInstance();
@@ -176,7 +185,7 @@ void GigEcameraCreateWithIp()
     
     camera.Open(); //打开才能读参数
 
-    camera.ExposureTimeAbs.SetValue(20000.0);
+    camera.ExposureTimeAbs.SetValue(10000.0);
     camera.AcquisitionFrameRateEnable.SetValue(true);
     camera.AcquisitionFrameRateAbs.SetValue(40.0);
 
@@ -189,7 +198,10 @@ void GigEcameraCreateWithIp()
     // camera.ChunkSelector.SetValue(ChunkSelector_Triggerinputcounter);
     // camera.ChunkEnable.SetValue(true);
 
-            // Print the model name of the camera.
+    fprintf(logg, "exposure time : %s\n", CParameter(camera.GetNodeMap().GetNode("ExposureTimeAbs")).ToString().c_str());
+    fprintf(logg, "frame rate: %s\n", CParameter(camera.GetNodeMap().GetNode("ResultingFrameRateAbs")).ToString().c_str());
+    fprintf(logg, "readout time: %s\n", CParameter(camera.GetNodeMap().GetNode("ReadoutTimeAbs")).ToString().c_str());
+    // Print the model name of the camera.
     cout << "Using device " << 
     camera.GetDeviceInfo().GetModelName() << " " <<
     camera.GetDeviceInfo().GetIpAddress() << " " <<
@@ -217,40 +229,40 @@ void GigEcameraCreateWithIp()
     endl;
     //init: Using device acA1300-60gmNIR 169.254.0.55 BaslerGigE 21752969 1 1 5000 Timed Continuous 0 10 1280 1024 Mono8 Line1 RisingEdge FrameStart Off 14705 68.0041 Global 
     //set/: Using device acA1300-60gmNIR 169.254.0.55 BaslerGigE 21752969 1 1 5000 Timed Continuous 1 40 1280 1024 Mono8 Line1 RisingEdge FrameStart Off 14705 39.9904 Global 
-    //exposure time start
-    //1 3020400699620
-    //2 3020425705700
-    //3 3020450711780
 
     // cout << camera.GevTimestampTickFrequency() << endl; //1000000000
+    fprintf(logg, "\nstart grabbing(system): %llu\n\n", std::chrono::system_clock::now().time_since_epoch().count());
 
     camera.StartGrabbing();
     // cout << std::chrono::system_clock::now().time_since_epoch().count() << endl; //1675776932585
-    // camera.GevTimestampControlLatch.Execute();
-    // cout << camera.GevTimestampValue.GetValue() << endl; //4867797
+    camera.GevTimestampControlLatch.Execute();
+    // cout << camera.GevTimestampValue.GetValue() << endl; //after StartGrabbing 4867797
     // cout << std::chrono::system_clock::now().time_since_epoch().count() << endl; //1675776932588
+    fprintf(logg, "after start grabbing(camera): %lld\n", camera.GevTimestampValue.GetValue());
+    fprintf(logg, "after start grabbing(system): %llu\n", std::chrono::system_clock::now().time_since_epoch().count());
 
-        // This smart pointer will receive the grab result data.
+    // This smart pointer will receive the grab result data.
 
     CBaslerUniversalGrabResultPtr ptrGrabResult;
-    cout << "?" << endl;
-    for (uint32_t i = 0; i < c_countOfImagesToGrab && camera.IsGrabbing(); ++i)
+    for (uint32_t i = 0; i < 50 && camera.IsGrabbing(); ++i)
     {
         // cout << "1 " << std::chrono::system_clock::now().time_since_epoch().count() << endl; 
         camera.RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_ThrowException ); // 阻塞
-        // camera.GevTimestampControlLatch.Execute(); 
-        // cout << camera.GevTimestampValue.GetValue() << endl; //4867864  4867889 4867914 4867939
-        //                                                      //4867799  4867824 4867849 4867874
-        // cout << "2 " << std::chrono::system_clock::now().time_since_epoch().count() << endl; //1675776932656 1675776932681 1675776932706 1675776932731
+        camera.GevTimestampControlLatch.Execute(); 
+        // cout << "after RetrieveResult: " << camera.GevTimestampValue.GetValue() << endl; //after RetrieveResult: 4867864  4867889 4867914 4867939
+        //                                                      //when Exposure start : 4867799  4867824 4867849 4867874
+        // cout << "system " << std::chrono::system_clock::now().time_since_epoch().count() << endl; //1675776932656 1675776932681 1675776932706 1675776932731
+        fprintf(logg, "after RetrieveResult(camera): %lld\n", camera.GevTimestampValue.GetValue());
+        fprintf(logg, "after RetrieveResult(system): %llu\n", std::chrono::system_clock::now().time_since_epoch().count());
 
 
         if (ptrGrabResult->GrabSucceeded())
         {
             intptr_t cameraContextValue = ptrGrabResult->GetCameraContext();
-            cout << "Camera " << cameraContextValue << ": " << camera.GetDeviceInfo().GetModelName() << endl;
+            // cout << "Camera " << cameraContextValue << ": " << camera.GetDeviceInfo().GetModelName() << endl;
             // cout << "BufferSize: " << ptrGrabResult->GetBufferSize() << endl; //size of image ptrGrabResult->GetImageSize() ptrGrabResult->GetPayloadSize()
-            cout << "Exposure start ts: " << ptrGrabResult->GetTimeStamp() << endl;
-            cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << endl;
+            // cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << "\tExposure start ts: " << ptrGrabResult->GetTimeStamp() << endl;
+            fprintf(logg, "Imagenum: %lld\tExposure start ts: %lld\n", ptrGrabResult->GetImageNumber(), ptrGrabResult->GetTimeStamp());
             // cout << "? " << ptrGrabResult->GetNumberOfSkippedImages() << endl;
             
             // const uint8_t* pImageBuffer = (uint8_t*) ptrGrabResult->GetBuffer();
@@ -262,11 +274,12 @@ void GigEcameraCreateWithIp()
             auto t1 = std::chrono::steady_clock::now();
 
             CImagePersistence::Save(ImageFileFormat_Bmp, 
-                                    String_t(std::string("../k20/" + to_string(ptrGrabResult->GetImageNumber()) + ".bmp").c_str()),
+                                    String_t(std::string("../k5/" + to_string(ptrGrabResult->GetImageNumber()) + ".bmp").c_str()),
                                     ptrGrabResult);
             auto t2 = std::chrono::steady_clock::now();
             double dr_ms = std::chrono::duration<double,std::milli>(t2-t1).count();
-            cout << "save time :" << dr_ms << endl;
+            // cout << "save time :" << dr_ms << endl;
+            fprintf(logg, "save using time :%llf\n", dr_ms);
 
 
         }
