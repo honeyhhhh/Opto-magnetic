@@ -1,0 +1,250 @@
+    camera.MaxNumBuffer = 15;
+    camera.OutputQueueSize = 10;
+    
+---- GrabStrategy_UpcomingImage ----
+Using device acA1300-60gmNIR 169.254.0.55 BaslerGigE 21752969 1 1 5000 5000 0 Timed Continuous 1 40 1280 1024 Mono8 Software RisingEdge FrameStart Off 14705 39.9904 Global 10 0 0 4294967295 50 5 
+AcquisitionStart event. Timestamp: 5093386156660
+FrameStart event. Timestamp: 5093390378260
+AcquisitionStart event. Timestamp: 5093395378580
+FrameStart event. Timestamp: 5093415384980
+AcquisitionStart event. Timestamp: 5093420384620
+Exposure End event. FrameID: 1 Timestamp: 5093440390300
+FrameStart event. Timestamp: 5093440390300
+AcquisitionStart event. Timestamp: 5093445391800
+Exposure End event. FrameID: 2 Timestamp: 5093465397200
+FrameStart event. Timestamp: 5093465397200
+AcquisitionStart event. Timestamp: 5093470397820
+Exposure End event. FrameID: 3 Timestamp: 5093490402700
+FrameStart event. Timestamp: 5093490402700
+Exposure End event. FrameID: 199 Timestamp: 5098391594150
+FrameStart event. Timestamp: 5098391594150
+AcquisitionStart event. Timestamp: 5098396595780
+ImageNumber: 1  Exposure start ts: 5098341576030 0
+after RetrieveResult: 5098407716140
+Exposure End event. FrameID: 200 Timestamp: 5098416600380
+FrameStart event. Timestamp: 5098416600380
+AcquisitionStart event. Timestamp: 5098421601190
+ImageNumber: 2  Exposure start ts: 5098366582110 0
+after RetrieveResult: 5098432988190
+Exposure End event. FrameID: 201 Timestamp: 5098441606500
+FrameStart event. Timestamp: 5098441606500
+AcquisitionStart event. Timestamp: 5098446607270
+ImageNumber: 3  Exposure start ts: 5098391588190 0
+after RetrieveResult: 5098457769460
+Exposure End event. FrameID: 202 Timestamp: 5098466612500
+FrameStart event. Timestamp: 5098466612500
+AcquisitionStart event. Timestamp: 5098471613660
+ImageNumber: 4  Exposure start ts: 5098416594270 0
+after RetrieveResult: 5098482833100
+Exposure End event. FrameID: 203 Timestamp: 5098491618500
+FrameStart event. Timestamp: 5098491618500
+AcquisitionStart event. Timestamp: 5098496619780
+ImageNumber: 5  Exposure start ts: 5098441600350 0
+after RetrieveResult: 5098507891350
+Exposure End event. FrameID: 204 Timestamp: 5098516624660
+FrameStart event. Timestamp: 5098516624660
+AcquisitionStart event. Timestamp: 5098521625680
+ImageNumber: 6  Exposure start ts: 5098466606430 0
+after RetrieveResult: 5098532451030
+Exposure End event. FrameID: 205 Timestamp: 5098541630740
+FrameStart event. Timestamp: 5098541630740
+AcquisitionStart event. Timestamp: 5098546632440
+ImageNumber: 7  Exposure start ts: 5098491612510 0
+after RetrieveResult: 5098557882750
+Exposure End event. FrameID: 206 Timestamp: 5098566636870
+FrameStart event. Timestamp: 5098566636870
+AcquisitionStart event. Timestamp: 5098571637980
+ImageNumber: 8  Exposure start ts: 5098516618590 0
+after RetrieveResult: 5098582658350
+Exposure End event. FrameID: 207 Timestamp: 5098591642900
+FrameStart event. Timestamp: 5098591642900
+AcquisitionStart event. Timestamp: 5098596643920
+ImageNumber: 9  Exposure start ts: 5098541624670 0
+after RetrieveResult: 5098607763280
+Exposure End event. FrameID: 208 Timestamp: 5098616648980
+FrameStart event. Timestamp: 5098616648980
+AcquisitionStart event. Timestamp: 5098621650680
+ImageNumber: 10 Exposure start ts: 5098566630750 0
+after RetrieveResult: 5098632885090
+Exposure End event. FrameID: 209 Timestamp: 5098641655060
+FrameStart event. Timestamp: 5098641655060
+AcquisitionStart event. Timestamp: 5098646655910
+ImageNumber: 11 Exposure start ts: 5098591636830 0
+after RetrieveResult: 5098657719410
+Exposure End event. FrameID: 210 Timestamp: 5098666661190
+FrameStart event. Timestamp: 5098666661190
+AcquisitionStart event. Timestamp: 5098671662520
+ImageNumber: 12 Exposure start ts: 5098616642910 0
+0
+after RetrieveResult: 5098682970900
+Exposure End event. FrameID: 211 Timestamp: 5098691667220
+FrameStart event. Timestamp: 5098691667220
+AcquisitionStart event. Timestamp: 5098696668720
+ImageNumber: 13 Exposure start ts: 5098641648990 0
+after RetrieveResult: 5098708100080
+Exposure End event. FrameID: 212 Timestamp: 5098716673300
+FrameStart event. Timestamp: 5098716673300
+AcquisitionStart event. Timestamp: 5098721674510
+ImageNumber: 14 Exposure start ts: 5098666655070 0
+after RetrieveResult: 5098732863120
+Exposure End event. FrameID: 213 Timestamp: 5098741679430
+FrameStart event. Timestamp: 5098741679430
+AcquisitionStart event. Timestamp: 5098746680540
+ImageNumber: 15 Exposure start ts: 5098691661150 0
+after RetrieveResult: 5098757778030
+Exposure End event. FrameID: 214 Timestamp: 5098766685460
+FrameStart event. Timestamp: 5098766685460
+AcquisitionStart event. Timestamp: 5098771686300
+ImageNumber: 16 Exposure start ts: 5098716667230 0
+after RetrieveResult: 5098783061230
+Exposure End event. FrameID: 215 Timestamp: 5098791691540
+FrameStart event. Timestamp: 5098791691540
+AcquisitionStart event. Timestamp: 5098796692380
+ImageNumber: 17 Exposure start ts: 5098741673310 0
+after RetrieveResult: 5098808148240
+Exposure End event. FrameID: 216 Timestamp: 5098816697540
+FrameStart event. Timestamp: 5098816697540
+AcquisitionStart event. Timestamp: 5098821698820
+ImageNumber: 18 Exposure start ts: 5098766679390 0
+after RetrieveResult: 5098832776160
+Exposure End event. FrameID: 217 Timestamp: 5098841703700
+FrameStart event. Timestamp: 5098841703700
+AcquisitionStart event. Timestamp: 5098846704720
+ImageNumber: 19 Exposure start ts: 5098791685470 0
+after RetrieveResult: 5098857774430
+Exposure End event. FrameID: 218 Timestamp: 5098866709780
+FrameStart event. Timestamp: 5098866709780
+AcquisitionStart event. Timestamp: 5098871710720
+ImageNumber: 20 Exposure start ts: 5098816691550 0
+after RetrieveResult: 5098882790260
+Exposure End event. FrameID: 219 Timestamp: 5098891715900
+FrameStart event. Timestamp: 5098891715900
+AcquisitionStart event. Timestamp: 5098896716560
+ImageNumber: 21 Exposure start ts: 5098841697630 0
+0
+Retrieved 20 grab results from output queue.
+
+
+
+
+
+---- GrabStrategy_LatestImageOnly ----
+Using device acA1300-60gmNIR 169.254.0.55 BaslerGigE 21752969 1 1 5000 5000 0 Timed Continuous 1 40 1280 1024 Mono8 Software RisingEdge FrameStart Off 14705 39.9904 Global 10 0 0 4294967295 50 5
+AcquisitionStart event. Timestamp: 5502770041260
+FrameStart event. Timestamp: 5502774268300
+AcquisitionStart event. Timestamp: 5502779268720
+FrameStart event. Timestamp: 5502799274320
+AcquisitionStart event. Timestamp: 5502804275360
+Exposure End event. FrameID: 1 Timestamp: 5502824280420  
+FrameStart event. Timestamp: 5502824280420
+AcquisitionStart event. Timestamp: 5502829281860
+Exposure End event. FrameID: 2 Timestamp: 5502849286500  
+FrameStart event. Timestamp: 5502849286500
+AcquisitionStart event. Timestamp: 5502854289220
+Exposure End event. FrameID: 3 Timestamp: 5502874292740  
+FrameStart event. Timestamp: 5502874292740
+Exposure End event. FrameID: 199 Timestamp: 5507775484190
+FrameStart event. Timestamp: 5507775484190
+ImageNumber: 1  Exposure start ts: 5507700460000 197     
+after RetrieveResult: 5507777073150
+AcquisitionStart event. Timestamp: 5507780485510
+ImageNumber: 2  Exposure start ts: 5507725466080 0
+after RetrieveResult: 5507791641270
+Exposure End event. FrameID: 200 Timestamp: 5507800490310
+FrameStart event. Timestamp: 5507800490310
+AcquisitionStart event. Timestamp: 5507805492540
+ImageNumber: 3  Exposure start ts: 5507750472160 0
+after RetrieveResult: 5507816541390
+Exposure End event. FrameID: 201 Timestamp: 5507825496460
+FrameStart event. Timestamp: 5507825496460      
+AcquisitionStart event. Timestamp: 5507830497830
+ImageNumber: 4  Exposure start ts: 5507775478240 0
+after RetrieveResult: 5507841416270
+Exposure End event. FrameID: 202 Timestamp: 5507850502540
+FrameStart event. Timestamp: 5507850502540
+AcquisitionStart event. Timestamp: 5507855504520
+ImageNumber: 5  Exposure start ts: 5507800484320 0
+after RetrieveResult: 5507866783370
+Exposure End event. FrameID: 203 Timestamp: 5507875508700
+FrameStart event. Timestamp: 5507875508700
+AcquisitionStart event. Timestamp: 5507880509470
+ImageNumber: 6  Exposure start ts: 5507825490400 0
+after RetrieveResult: 5507891362710
+Exposure End event. FrameID: 204 Timestamp: 5507900514750
+FrameStart event. Timestamp: 5507900514750
+AcquisitionStart event. Timestamp: 5507905516680
+ImageNumber: 7  Exposure start ts: 5507850496480 0
+after RetrieveResult: 5507916627030
+Exposure End event. FrameID: 205 Timestamp: 5507925520780
+FrameStart event. Timestamp: 5507925520780
+AcquisitionStart event. Timestamp: 5507930521980
+ImageNumber: 8  Exposure start ts: 5507875502560 0
+after RetrieveResult: 5507940938690
+Exposure End event. FrameID: 206 Timestamp: 5507950526940
+FrameStart event. Timestamp: 5507950526940
+AcquisitionStart event. Timestamp: 5507955528980
+ImageNumber: 9  Exposure start ts: 5507900508640 0
+after RetrieveResult: 5507966562590
+Exposure End event. FrameID: 207 Timestamp: 5507975532990
+FrameStart event. Timestamp: 5507975532990
+AcquisitionStart event. Timestamp: 5507980533790
+ImageNumber: 10 Exposure start ts: 5507925514720 0
+after RetrieveResult: 5507991693920
+Exposure End event. FrameID: 208 Timestamp: 5508000539020
+FrameStart event. Timestamp: 5508000539020
+AcquisitionStart event. Timestamp: 5508005541520
+ImageNumber: 11 Exposure start ts: 5507950520800 0
+after RetrieveResult: 5508016610910
+Exposure End event. FrameID: 209 Timestamp: 5508025545100
+FrameStart event. Timestamp: 5508025545100
+AcquisitionStart event. Timestamp: 5508030545990
+ImageNumber: 12 Exposure start ts: 5507975526880 0
+0
+after RetrieveResult: 5508041708590
+Exposure End event. FrameID: 210 Timestamp: 5508050551180
+FrameStart event. Timestamp: 5508050551180
+AcquisitionStart event. Timestamp: 5508055552830
+ImageNumber: 13 Exposure start ts: 5508000532960 0
+after RetrieveResult: 5508066700490
+Exposure End event. FrameID: 211 Timestamp: 5508075557190
+FrameStart event. Timestamp: 5508075557190
+AcquisitionStart event. Timestamp: 5508080559150
+ImageNumber: 14 Exposure start ts: 5508025539040 0
+after RetrieveResult: 5508091754390
+Exposure End event. FrameID: 212 Timestamp: 5508100563360
+FrameStart event. Timestamp: 5508100563360
+AcquisitionStart event. Timestamp: 5508105565340
+ImageNumber: 15 Exposure start ts: 5508050545120 0
+after RetrieveResult: 5508116624230
+Exposure End event. FrameID: 213 Timestamp: 5508125569470
+FrameStart event. Timestamp: 5508125569470
+AcquisitionStart event. Timestamp: 5508130570620
+ImageNumber: 16 Exposure start ts: 5508075551200 0
+after RetrieveResult: 5508141981190
+Exposure End event. FrameID: 214 Timestamp: 5508150575500
+FrameStart event. Timestamp: 5508150575500
+AcquisitionStart event. Timestamp: 5508155577150
+ImageNumber: 17 Exposure start ts: 5508100557280 0
+after RetrieveResult: 5508166581680
+Exposure End event. FrameID: 215 Timestamp: 5508175581580
+FrameStart event. Timestamp: 5508175581580
+AcquisitionStart event. Timestamp: 5508180583280
+ImageNumber: 18 Exposure start ts: 5508125563360 0
+after RetrieveResult: 5508191742590
+Exposure End event. FrameID: 216 Timestamp: 5508200587660
+FrameStart event. Timestamp: 5508200587660
+AcquisitionStart event. Timestamp: 5508205590160
+ImageNumber: 19 Exposure start ts: 5508150569440 0
+after RetrieveResult: 5508216682860
+Exposure End event. FrameID: 217 Timestamp: 5508225593670
+FrameStart event. Timestamp: 5508225593670
+AcquisitionStart event. Timestamp: 5508230595100
+ImageNumber: 20 Exposure start ts: 5508175575520 0
+after RetrieveResult: 5508241689470
+Exposure End event. FrameID: 218 Timestamp: 5508250599870
+FrameStart event. Timestamp: 5508250599870
+AcquisitionStart event. Timestamp: 5508255601470
+ImageNumber: 21 Exposure start ts: 5508200581600 0
+0
+Retrieved 20 grab results from output queue.
+

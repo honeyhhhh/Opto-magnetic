@@ -292,8 +292,8 @@ void GigEcameraCreateWithIp()
     camera.Width.SetValue(1280);
     camera.Height.SetValue(1024);
     camera.GevSCPSPacketSize.SetValue(8192); //巨型帧
-    camera.TriggerMode.SetValue(TriggerMode_On);
-    camera.TriggerSource.SetValue(TriggerSource_Software);
+    camera.TriggerMode.SetValue(TriggerMode_Off);
+    // camera.TriggerSource.SetValue(TriggerSource_Software);
 
 
     // camera.MaxNumQueuedBuffer.SetToMinimum();
@@ -362,7 +362,6 @@ void GigEcameraCreateWithIp()
     camera.MaxNumGrabResults.GetValue() << " " <<
     camera.MaxNumQueuedBuffer.GetValue() << " " <<
     camera.OutputQueueSize.GetValue() << " " <<
-    camera.ExposureStartDelayAbs.IsReadable() <<
     
     endl;
     //init: Using device acA1300-60gmNIR 169.254.0.55 BaslerGigE 21752969 1 1 5000 Timed Continuous 0 10 1280 1024 Mono8 Line1 RisingEdge FrameStart Off 14705 68.0041 Global 
@@ -398,8 +397,40 @@ void GigEcameraCreateWithIp()
             camera.EventNotification.SetValue( EventNotification_GenICamEvent );
         }
     }
+    camera.MaxNumBuffer = 15;
+    camera.OutputQueueSize = 10;
+    camera.StartGrabbing(GrabStrategy_UpcomingImage);
+    /*
+        if busy after startgrabbing for a long while
+        GrabStrategy_OneByOne: The images are processed in the order of their arrival.  the grab engine thread retrieves the image data and queues the buffers into the internal output queue.           
+        (SkippedImages = 0)     All triggered images are still waiting in the output queue and are now retrieved. 
+        (NumReadyBuffers = Max) The grabbing continues in the background, e.g. when using hardware trigger mode, as long as the grab engine does not run out of buffers.
+        (only read full grab buffer can queue new image from output queue, so may cause incontinuity
 
-    camera.StartGrabbing(GrabStrategy_OneByOne);
+        GrabStrategy_LatestImageOnly: The images are processed in the order of their arrival but only the last received image is kept in the output queue.
+        (SkippedImages = ? at num 1)  This strategy can be useful when the acquired images are only displayed on the screen.
+        (SkippedImages = 0 af      ) If the processor has been busy for a while and images could not be displayed automatically
+        (continuity)                  the latest image is displayed when processing time is available again.
+        (NumReadyBuffers = 0)         Only the last received image is waiting in the internal output queue and is now retrieved.
+                                      The grabbing continues in the background, e.g. when using the hardware trigger mode.
+        Imagenum 1 is the latest in buffer , retrieved block less than 25ms
+
+
+        GrabStrategy_LatestImages     The images are processed
+        (camera.OutputQueueSize)      in the order of their arrival, but only a number of the images received last are kept in the output queue.
+        (SkippedImages = ? at num 1)  Only the images received last are waiting in the internal output queue and are now retrieved.
+        (NumReadyBuffers = OutputQueueSize --  retrieved block less than 25ms)
+        (continuity)                  
+        Imagenum 1 is the latest - OutputQueueSize 
+
+        GrabStrategy_UpcomingImage   the buffer queue is kept empty / real latest
+                                    A buffer for grabbing is queued each time when RetrieveResult() is called. The image data is grabbed into the buffer and returned.
+                                    This ensures that the image grabbed is the next image received from the camera.  All images are still transported to the computer.
+
+                                    
+    */
+
+
     // camera.GevTimestampControlLatch.Execute();
     // cout << "start grab : " << camera.GevTimestampValue.GetValue() << endl;
     // cout << std::chrono::system_clock::now().time_since_epoch().count() << endl; //1675776932585
@@ -412,18 +443,19 @@ void GigEcameraCreateWithIp()
     // This smart pointer will receive the grab result data.
 
 
+    WaitObject::Sleep(5 * 1000);
 
 
     CBaslerUniversalGrabResultPtr ptrGrabResult;
 
-    for (int i = 0; i < 1; i++)
-    {
-        // Execute the software trigger. Wait up to 1000 ms for the camera to be ready for trigger.
-        if (camera.WaitForFrameTriggerReady( 1000, TimeoutHandling_ThrowException ))
-        {
-                camera.ExecuteSoftwareTrigger();
-        }
-    }
+    // for (int i = 0; i < 1; i++)
+    // {
+    //     // Execute the software trigger. Wait up to 1000 ms for the camera to be ready for trigger.
+    //     if (camera.WaitForFrameTriggerReady( 1000, TimeoutHandling_ThrowException ))
+    //     {
+    //             camera.ExecuteSoftwareTrigger();
+    //     }
+    // }
     // if (camera.GetGrabResultWaitObject().Wait( 0 ))
     // {
     //     cout << endl << "Grab results wait in the output queue." << endl << endl;
@@ -439,6 +471,15 @@ void GigEcameraCreateWithIp()
     int nBuffersInQueue = 0;
     while (camera.RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_Return ))
     {
+        if (nBuffersInQueue == 11)
+        {
+            cout << camera.NumReadyBuffers.GetValue() << endl;
+        }
+        if (nBuffersInQueue == 20)
+        {
+            cout << camera.NumReadyBuffers.GetValue() << endl;
+            break;
+        }
         nBuffersInQueue++;
         camera.GevTimestampControlLatch.Execute(); 
         cout << "after RetrieveResult: " << camera.GevTimestampValue.GetValue() << endl;
@@ -509,7 +550,7 @@ void GigEcameraCreateWithIp()
     camera.EventSelector.SetValue( EventSelector_ExposureEnd );
     camera.EventNotification.SetValue( EventNotification_Off );
 
-
+    camera.StopGrabbing();
     cout << "close" << endl;
 
     camera.Close();
