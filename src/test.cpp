@@ -13,7 +13,9 @@ enum MyEvents
     eMyExposureEndEvent = 100,
     eMyFrameStartOvertrigger = 200,
     eMyFrameStartEvent = 300,
-    eMyAcquisitionStartEvent = 400
+    eMyAcquisitionStartEvent = 400,
+    eMyAcquisitionStartOvertriggerEvent = 500
+
     // More events can be added here.
 };
 
@@ -56,19 +58,32 @@ public:
             case eMyAcquisitionStartEvent:
                 cout << "AcquisitionStart event. Timestamp: " << camera.AcquisitionStartEventTimestamp.GetValue() << std::endl;
                 break;
-
+            case eMyAcquisitionStartOvertriggerEvent:
+                cout << "AcquisitionStartOvertrigger Event Timestamp: " << camera.AcquisitionStartOvertriggerEventTimestamp.GetValue() << std::endl;
+                break;
         }
     }
 };
 //Example of an image event handler.
-class CSampleImageEventHandler : public CImageEventHandler
+class CSampleImageEventHandler : public CBaslerUniversalImageEventHandler
 {
 public:
-    virtual void OnImageGrabbed( CInstantCamera& /*camera*/, const CGrabResultPtr& /*ptrGrabResult*/ )
+    virtual void OnImageGrabbed( CBaslerUniversalInstantCamera& camera, const CBaslerUniversalGrabResultPtr& ptrGrabResult )
     {
-        // cout << "CSampleImageEventHandler::OnImageGrabbed called." << std::endl;
-        // cout << std::endl;
-        // cout << std::endl;
+        if (ptrGrabResult->GrabSucceeded())
+        {
+            cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << "\tExposure start ts: " << ptrGrabResult->GetTimeStamp() << " " << ptrGrabResult->GetNumberOfSkippedImages() << endl;
+            if (ptrGrabResult->ChunkTimestamp.IsReadable())
+                cout << "OnImageGrabbed: TimeStamp (Result) : " << ptrGrabResult->ChunkTimestamp.GetValue() << endl;
+            if (ptrGrabResult->ChunkExposureTime.IsReadable())
+                cout << "OnImageGrabbed: ExposureTime (Result) : " << ptrGrabResult->ChunkExposureTime.GetValue() << endl;
+            if (ptrGrabResult->ChunkFramecounter.IsReadable()) // frame start /  at 0
+                cout << "OnImageGrabbed: Framecouter (Result) : " << ptrGrabResult->ChunkFramecounter.GetValue() << endl;
+            if (ptrGrabResult->ChunkTriggerinputcounter.IsReadable())
+                cout << "OnImageGrabbed: Triggerinputcounter (Result) : " << ptrGrabResult->ChunkTriggerinputcounter.GetValue() << endl;
+
+            
+        }
     }
 };
 
@@ -234,12 +249,12 @@ void GigEcameraCreateWithIp()
 {
     // sleep(10);
     // std::cout is not use
-    logg = fopen("../log_kk.txt", "w");
-    if (logg == NULL)
-    {
-        std::cout << "failed create log" << endl;
-    }
-    fprintf(logg, "begin basler test\n");
+    // logg = fopen("../log_kk.txt", "w");
+    // if (logg == NULL)
+    // {
+    //     std::cout << "failed create log" << endl;
+    // }
+    // fprintf(logg, "begin basler test\n");
 
     PylonInitialize();
 
@@ -271,26 +286,36 @@ void GigEcameraCreateWithIp()
     {
             throw RUNTIME_EXCEPTION( "The device doesn't support events." );
     }
-    camera.ExposureTimeAbs.TrySetValue(10000.0);
+    camera.ExposureTimeAbs.TrySetValue(5000.0);
     camera.AcquisitionFrameRateEnable.SetValue(true);
     camera.AcquisitionFrameRateAbs.SetValue(40.0);
+    camera.Width.SetValue(1280);
+    camera.Height.SetValue(1024);
+    camera.GevSCPSPacketSize.SetValue(8192); //巨型帧
+    camera.TriggerMode.SetValue(TriggerMode_On);
+    camera.TriggerSource.SetValue(TriggerSource_Software);
+
 
     // camera.MaxNumQueuedBuffer.SetToMinimum();
     // camera.MaxNumGrabResults.SetToMinimum();
     // camera.MaxNumBuffer.SetToMaximum();
     // camera.OutputQueueSize = 1;
     camera.RegisterCameraEventHandler( pHandler1, "ExposureEndEventData", eMyExposureEndEvent, RegistrationMode_ReplaceAll, Cleanup_None );
-    camera.RegisterCameraEventHandler( pHandler1, "FrameStartOvertriggerEventTimestamp", eMyFrameStartOvertrigger, RegistrationMode_Append, Cleanup_None );
+    // camera.RegisterCameraEventHandler( pHandler1, "FrameStartOvertriggerEventTimestamp", eMyFrameStartOvertrigger, RegistrationMode_Append, Cleanup_None );
     camera.RegisterCameraEventHandler( pHandler1, "FrameStartEventTimestamp", eMyFrameStartEvent, RegistrationMode_Append, Cleanup_None );
     camera.RegisterCameraEventHandler( pHandler1, "AcquisitionStartEventTimestamp", eMyAcquisitionStartEvent, RegistrationMode_Append, Cleanup_None );
-
+    // camera.RegisterCameraEventHandler( pHandler1, "AcquisitionStartOvertriggerEventTimestamp", eMyAcquisitionStartOvertriggerEvent, RegistrationMode_Append, Cleanup_None );
+    
     // camera.RegisterCameraEventHandler( pHandler2, "ExposureEndEventFrameID", eMyExposureEndEvent, RegistrationMode_Append, Cleanup_None );
     // camera.RegisterCameraEventHandler( pHandler2, "ExposureEndEventTimestamp", eMyExposureEndEvent, RegistrationMode_Append, Cleanup_None );
     
 
 
 
+
     // camera.ChunkModeActive.SetValue(true);
+    // camera.ChunkSelector.SetValue(ChunkSelector_ExposureTime);
+    // camera.ChunkEnable.SetValue(true);
     // camera.ChunkSelector.SetValue(ChunkSelector_Timestamp);
     // camera.ChunkEnable.SetValue(true);
     // camera.ChunkSelector.SetValue(ChunkSelector_Framecounter);
@@ -337,6 +362,8 @@ void GigEcameraCreateWithIp()
     camera.MaxNumGrabResults.GetValue() << " " <<
     camera.MaxNumQueuedBuffer.GetValue() << " " <<
     camera.OutputQueueSize.GetValue() << " " <<
+    camera.ExposureStartDelayAbs.IsReadable() <<
+    
     endl;
     //init: Using device acA1300-60gmNIR 169.254.0.55 BaslerGigE 21752969 1 1 5000 Timed Continuous 0 10 1280 1024 Mono8 Line1 RisingEdge FrameStart Off 14705 68.0041 Global 
     //set/: Using device acA1300-60gmNIR 169.254.0.55 BaslerGigE 21752969 1 1 5000 Timed Continuous 1 40 1280 1024 Mono8 Line1 RisingEdge FrameStart Off 14705 39.9904 Global 
@@ -348,14 +375,6 @@ void GigEcameraCreateWithIp()
 
 
     if (camera.EventSelector.TrySetValue( EventSelector_ExposureEnd ))
-    {   // Enable it.
-        if (!camera.EventNotification.TrySetValue( EventNotification_On ))
-        {
-                // scout-f, scout-g, and aviator GigE cameras use a different value.
-            camera.EventNotification.SetValue( EventNotification_GenICamEvent );
-        }
-    }
-   if (camera.EventSelector.TrySetValue( EventSelector_FrameStartOvertrigger ))
     {   // Enable it.
         if (!camera.EventNotification.TrySetValue( EventNotification_On ))
         {
@@ -379,11 +398,10 @@ void GigEcameraCreateWithIp()
             camera.EventNotification.SetValue( EventNotification_GenICamEvent );
         }
     }
-    camera.GevTimestampControlLatch.Execute();
-    cout << "before grab : " << camera.GevTimestampValue.GetValue() << endl;
-    camera.StartGrabbing(c_countOfImagesToGrab);
-    camera.GevTimestampControlLatch.Execute();
-    cout << "start grab : " << camera.GevTimestampValue.GetValue() << endl;
+
+    camera.StartGrabbing(GrabStrategy_OneByOne);
+    // camera.GevTimestampControlLatch.Execute();
+    // cout << "start grab : " << camera.GevTimestampValue.GetValue() << endl;
     // cout << std::chrono::system_clock::now().time_since_epoch().count() << endl; //1675776932585
     // camera.GevTimestampControlLatch.Execute();
     // cout << camera.GevTimestampValue.GetValue() << endl; //after StartGrabbing 4867797
@@ -398,23 +416,37 @@ void GigEcameraCreateWithIp()
 
     CBaslerUniversalGrabResultPtr ptrGrabResult;
 
-    while (camera.IsGrabbing())
+    for (int i = 0; i < 1; i++)
     {
-            // Execute the software trigger. Wait up to 1000 ms for the camera to be ready for trigger.
-        // if (camera.WaitForFrameTriggerReady( 1000, TimeoutHandling_ThrowException ))
-        // {
-        //         camera.ExecuteSoftwareTrigger();
-        // }
-
-        // Retrieve grab results and notify the camera event and image event handlers.
-        camera.RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_ThrowException );
-        camera.GevTimestampControlLatch.Execute(); 
-        cout << "after RetrieveResult: " << camera.GevTimestampValue.GetValue() << endl; //after RetrieveResult: 4867864  4867889 4867914 4867939
-        if (ptrGrabResult->GrabSucceeded())
+        // Execute the software trigger. Wait up to 1000 ms for the camera to be ready for trigger.
+        if (camera.WaitForFrameTriggerReady( 1000, TimeoutHandling_ThrowException ))
         {
-            cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << "\tExposure start ts: " << ptrGrabResult->GetTimeStamp() << endl;
-        }            
+                camera.ExecuteSoftwareTrigger();
+        }
     }
+    // if (camera.GetGrabResultWaitObject().Wait( 0 ))
+    // {
+    //     cout << endl << "Grab results wait in the output queue." << endl << endl;
+    // }
+        // Retrieve grab results and notify the camera event and image event handlers.
+        // camera.RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_ThrowException );
+        // camera.GevTimestampControlLatch.Execute(); 
+        // cout << "after RetrieveResult: " << camera.GevTimestampValue.GetValue() << endl; 
+
+        // cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << "\tExposure start ts: " << ptrGrabResult->GetTimeStamp() << endl;
+
+        
+    int nBuffersInQueue = 0;
+    while (camera.RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_Return ))
+    {
+        nBuffersInQueue++;
+        camera.GevTimestampControlLatch.Execute(); 
+        cout << "after RetrieveResult: " << camera.GevTimestampValue.GetValue() << endl;
+    }
+    cout << "Retrieved " << nBuffersInQueue << " grab results from output queue." << endl << endl;
+        
+
+    
     // CGrabResultPtr ptrGrabResult;
 
     // for (uint32_t i = 0; i < 5 && camera.IsGrabbing(); ++i)
@@ -458,12 +490,12 @@ void GigEcameraCreateWithIp()
     //         // fprintf(logg, "save using time :%llf\n", dr_ms);
 
 
-    //         // int nBuffersInQueue = 0;
-    //         // while (camera.RetrieveResult( 0, ptrGrabResult, TimeoutHandling_Return ))
-    //         // {
-    //         //     nBuffersInQueue++;
-    //         // }
-    //         // cout << "Retrieved " << nBuffersInQueue << " grab results from output queue." << endl << endl;
+            // int nBuffersInQueue = 0;
+            // while (camera.RetrieveResult( 0, ptrGrabResult, TimeoutHandling_Return ))
+            // {
+            //     nBuffersInQueue++;
+            // }
+            // cout << "Retrieved " << nBuffersInQueue << " grab results from output queue." << endl << endl;
 
             
 
