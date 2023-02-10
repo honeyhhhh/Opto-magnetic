@@ -423,3 +423,136 @@ AcquisitionStart event. Timestamp: 127586961390
 ImageNumber: 21 Exposure start ts: 127531942460 0
 0
 Retrieved 20 grab results from output queue.
+
+
+
+
+---- free run 1----
+main start
+CPU num: 6
+hello
+init camera :169.254.0.22 at 1676010690313
+init camera :169.254.0.33 at 1676010690313
+init camera :169.254.0.44 at 1676010690314
+init camera :169.254.0.55 at 1676010690313
+                        start grab :169.254.0.33 at 1676010691343
+AcquisitionStart event. Timestamp: 7317221670340
+                        start grab :169.254.0.44 at 1676010691344
+                        start grab :169.254.0.22 at 1676010691344
+                        start grab :169.254.0.55 at 1676010691343
+AcquisitionStart event. Timestamp: 7317195427810
+AcquisitionStart event. Timestamp: FrameStart event. Timestamp: 7317199
+FrameStart event. Timestamp: 7317225
+AcquisitionStart event. Timestamp: 7317135773010
+7317199169450
+FrameStart event. Timestamp: 7317140
+FrameStart event. Timestamp: 7317203
+AcquisitionStart event. Timestamp: 7317230896640
+AcquisitionStart event. Timestamp: 7317204657140
+AcquisitionStart event. Timestamp: 7317208385920
+AcquisitionStart event. Timestamp: 7317145001080
+FrameStart event. Timestamp: 7317250
+FrameStart event. Timestamp: 7317228
+FrameStart event. Timestamp: 7317165
+FrameStart event. Timestamp: 7317224
+AcquisitionStart event. Timestamp: 7317255903380
+AcquisitionStart event. Timestamp: 7317233391900
+AcquisitionStart event. Timestamp: 7317170008040
+AcquisitionStart event. Timestamp: 7317229662500
+Exposure End event. FrameID: 1 Timestamp: 7317275
+Exposure End event. FrameID: 1 Timestamp: 7317249
+Exposure End event. FrameID: 1 Timestamp: 7317253
+Exposure End event. FrameID: FrameStart event. Timestamp: 7317253
+FrameStart event. Timestamp: 7317249
+1FrameStart event. Timestamp: 7317275
+ Timestamp: 7317190
+FrameStart event. Timestamp: 7317190
+AcquisitionStart event. Timestamp: 7317280909420
+AcquisitionStart event. Timestamp: 7317195011530
+AcquisitionStart event. Timestamp: 7317258398680
+AcquisitionStart event. Timestamp: 7317254670000
+ImageNumber: 1  Exposure start ts: 7317225 0
+ImageNumber: 1  Exposure start ts: 7317199 0
+ImageNumber: 1  Exposure start ts: 7317139 0
+ImageNumber: 1  Exposure start ts: 7317203 0
+1676010691413
+1676010691413
+1676010691413
+1676010691413
+
+
+
+--- 2
+
+main start
+CPU num: 6
+hello
+init camera :169.254.0.22 at 1676012406074
+init camera :169.254.0.44 at 1676012406074
+init camera :169.254.0.33 at 1676012406074
+init camera :169.254.0.55 at 1676012406075
+
+camera :169.254.0.33 at 1676012407073 1676012407074 in 9032925
+camera :169.254.0.22 at 1676012407073 1676012407074 in 9032836
+camera :169.254.0.44 at 1676012407073 1676012407074 in 9032902
+camera :169.254.0.55 at 1676012407073 1676012407074 in 9032896
+                        start grab :169.254.0.33 at 1676012407104
+                        start grab :169.254.0.55 at 1676012407105
+                        start grab :169.254.0.22 at 1676012407105
+                        start grab :169.254.0.44 at 1676012407105
+camera : 169.254.0.33 ImageNumber: 1    Exposure start ts: 9032959 0
+camera : 169.254.0.22 ImageNumber: 1    Exposure start ts: 9032871 0
+camera : 169.254.0.44 ImageNumber: 1    Exposure start ts: 9032938 0
+camera : 169.254.0.55 ImageNumber: 1    Exposure start ts: 9032932 0
+1676012407175
+1676012407176
+1676012407178
+1676012407177
+
+camera :169.254.0.33 at 1676012953312 1676012953313 in 9579155
+camera :169.254.0.22 at 1676012953312 1676012953313 in 9579065
+camera :169.254.0.44 at 1676012953312 1676012953313 in 9579133
+camera :169.254.0.55 at 1676012953312 1676012953313 in 9579126
+
+camera :169.254.0.33 at 1676013061057 1676013061057 in 9686898
+camera :169.254.0.22 at 1676013061057 1676013061057 in 9686808
+camera :169.254.0.44 at 1676013061057 1676013061057 in 9686876
+camera :169.254.0.55 at 1676013061057 1676013061057 in 9686869
+
+
+--- 2
+main start
+CPU num: 6
+hello
+init camera :169.254.0.22 at 1676012579258
+init camera :169.254.0.33 at 1676012579258
+init camera :169.254.0.55 at 1676012579259
+init camera :169.254.0.44 at 1676012579258
+camera :169.254.0.33 at 1676012580257 1676012580258 in 9206106
+camera :169.254.0.22 at 1676012580257 1676012580258 in 9206016
+camera :169.254.0.55 at 1676012580259 1676012580259 in 9206079
+camera :169.254.0.44 at 1676012580257 1676012580258 in 9206084
+                        start grab :169.254.0.33 at 1676012580287
+                        start grab :169.254.0.55 at 1676012580290
+                        start grab :169.254.0.22 at 1676012580290
+                        start grab :169.254.0.44 at 1676012580291
+camera : 169.254.0.33 ImageNumber: 1    Exposure start ts: 9206140 0
+camera : 169.254.0.22 ImageNumber: 1    Exposure start ts: 9206053 0
+camera : 169.254.0.55 ImageNumber: 1    Exposure start ts: 9206114 0
+camera : 169.254.0.44 ImageNumber: 1    Exposure start ts: 9206122 0
+1676012580360
+1676012580359
+1676012580360
+1676012580357
+
+
+---- 3
+camera :169.254.0.33 at 1676013128981 1676013128982 in 15735
+camera :169.254.0.22 at 1676013128981 1676013128982 in 15657
+camera :169.254.0.55 at 1676013128981 1676013128982 in 15720
+camera :169.254.0.44 at 1676013128981 1676013128982 in 15709
+
+camera :169.254.0.33 at 1676013245362 1676013245363 in 132114
+camera :169.254.0.22 at 1676013245362 1676013245363 in 132036
+camera :169.254.0.55 at 1676013245362 1676013245363 in 132099
+camera :169.254.0.44 at 1676013245362 1676013245363 in 132088

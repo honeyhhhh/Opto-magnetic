@@ -457,7 +457,6 @@ void GigEcameraCreateWithIp()
         // camera.RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_ThrowException );
         // camera.GevTimestampControlLatch.Execute(); 
         // cout << "after RetrieveResult: " << camera.GevTimestampValue.GetValue() << endl; 
-
         // cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << "\tExposure start ts: " << ptrGrabResult->GetTimeStamp() << endl;
 
         

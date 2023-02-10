@@ -2,7 +2,8 @@
 #include "test.hpp"
 #include "camera.hpp"
 #include <thread>
-
+#include <chrono>
+#include <mutex>
 
 
 
@@ -10,21 +11,28 @@
 int main()
 {
     cout << "main start" << endl; 
+    cout << "CPU num: " << std::thread::hardware_concurrency() << endl;
     PylonInitialize();
 
+    std::thread c[4];
 
-    std::thread c1(Grab_sync, CamIps[0]);
-    std::thread c2(Grab_sync, CamIps[1]);
-    std::thread c3(Grab_sync, CamIps[2]);
-    std::thread c4(Grab_sync, CamIps[3]);
+    for (int i = 0; i < 4; i++)
+    {
+        c[i] = std::thread(Grab_sync, CamIps[i]);
+    }
 
-    c1.join();
-    c2.join();
-    c3.join();
-    c4.join();
+    for (int i = 0; i < 4; i++)
+    {
+        c[i].detach();
+    }
+    cout << "hello" << endl;
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    cam_ready = true;
 
 
 
+    std::this_thread::sleep_for(std::chrono::seconds(5));
     PylonTerminate();
 
 
