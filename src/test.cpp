@@ -558,7 +558,7 @@ void GigEcameraCreateWithIp()
 
 
 
-void get_frame(ndicapi* device)
+void get_frame1(ndicapi* device)
 {
     auto t1 = std::chrono::steady_clock::now();
     int frame_count = 0;
@@ -599,7 +599,7 @@ void get_frame(ndicapi* device)
 
 
 
-int aurora_test()
+int aurora_test1()
 {
 
     // std::cout is not use
@@ -741,7 +741,7 @@ int aurora_test()
             get frame
 
         */
-        get_frame(device);
+        get_frame1(device);
 
 
         /*
@@ -806,7 +806,7 @@ static void DisplayMarker( int nMarker, Position3d dtPosition3d )
 
 } /* DisplayMarker */
 
-int certus_test()
+int certus_test1()
 {
     // logg = fopen("../log_certus.txt", "w");
     // if (logg == NULL)

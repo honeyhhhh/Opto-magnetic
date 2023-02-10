@@ -55,9 +55,9 @@ void GigEcameraCreateWithIp();
 
 
 
-int certus_test();
+int certus_test1();
 
-int aurora_test();
+int aurora_test1();
 
 
 

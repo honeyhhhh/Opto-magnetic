@@ -5,12 +5,17 @@
 #include <chrono>
 #include <mutex>
 #include <condition_variable>
+#include <vector>
+#include <fstream>
 
 
 std::mutex cam_mutex;
 std::condition_variable cam_cond;
 int cam_latch = 4;
 bool cam_ready = false;
+
+
+
 
 
 

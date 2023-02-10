@@ -15,6 +15,7 @@
 #endif
 
 #include "sync.hpp"
+#include <vector>
 
 using namespace std;
 using namespace Pylon;
@@ -132,16 +133,23 @@ MyCamera::MyCamera(const string camip)
     di.SetIpAddress(camip.c_str());
 
     camera.Attach(TlFactory.CreateDevice(di));
- 
-    auto t5 = std::chrono::system_clock::now().time_since_epoch().count();
-    cout << "@" << t5 / 10000 << endl;
 
     
-    CSampleCameraEventHandler* pHandler1 = new CSampleCameraEventHandler;
-    camera.RegisterImageEventHandler( new CSampleImageEventHandler, RegistrationMode_Append, Cleanup_Delete );
-    camera.GrabCameraEvents = true;
+    // CSampleCameraEventHandler* pHandler1 = new CSampleCameraEventHandler;
+    // camera.RegisterImageEventHandler( new CSampleImageEventHandler, RegistrationMode_Append, Cleanup_Delete );
+    // camera.GrabCameraEvents = true;
 
     camera.Open();
+
+    auto t1 = std::chrono::system_clock::now().time_since_epoch().count();
+    camera.GevTimestampControlLatch.Execute(); 
+    auto t2 = std::chrono::system_clock::now().time_since_epoch().count();
+    auto tt = camera.GevTimestampValue.GetValue() / 1000000;
+
+    auto t3 = (t1 + t2) / 2 / 10000; 
+    timediffer = t3 - tt;
+    // cout << "camera :" << camip << " at " << t1/10000 << " " << t2/10000 << " in " << tt << endl;
+
 
 
 
@@ -185,38 +193,42 @@ MyCamera::MyCamera(const string camip)
     camera.MaxNumBuffer = 15;
     camera.OutputQueueSize = 10;
 
+    cout << "cam :" << camip << " ready" << endl;
     while (!cam_ready){ std::this_thread::sleep_for(std::chrono::microseconds(50));}
 
-    auto t1 = std::chrono::system_clock::now().time_since_epoch().count();
-    camera.GevTimestampControlLatch.Execute(); 
-    auto t2 = std::chrono::system_clock::now().time_since_epoch().count();
-    auto tt = camera.GevTimestampValue.GetValue() / 1000000;
-
-    auto t3 = (t1 + t2) / 2 / 10000; 
-    timediffer = t3 - tt;
-    cout << "camera :" << camip << " at " << t1/10000 << " " << t2/10000 << " in " << tt << endl;
 
     // PrintConfig();
-
-
-
-
-
     // need sync here
 
-    camera.StartGrabbing(GrabStrategy_OneByOne);
+    camera.StartGrabbing(GrabStrategy_UpcomingImage);
     CBaslerUniversalGrabResultPtr ptrGrabResult;
 
     auto t4 = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
     cout << "\t\t\tstart grab :" << camip << " at " << t4  << endl;
 
     // ----------------------
-    // while (camera.RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_Return ))
-    // {
-    //     auto t5 = std::chrono::system_clock::now().time_since_epoch().count();
-    //     cout << t5 / 10000 << endl;
-    //     break;
-    // }
+    int nbuff = 0;
+    while (camera.RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_Return ))
+    {
+        // auto t5 = std::chrono::system_clock::now().time_since_epoch().count();
+        // cout << "camera : " << camera.GetDeviceInfo().GetIpAddress() << " ";
+        // cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << "\tExposure start ts: " << Time_convert(ptrGrabResult->GetTimeStamp()) + 50 << " " << t5/10000 << " " << ptrGrabResult->GetNumberOfSkippedImages() << endl;
+
+        uint64_t f = Time_convert(ptrGrabResult->GetTimeStamp()) + 50;
+ 
+        if (ptrGrabResult->GrabSucceeded())
+        {
+
+            CImagePersistence::Save(ImageFileFormat_Bmp, 
+                                    String_t((std::string(std::string("../" + camip + "/") + to_string(f) + ".bmp")).c_str()),
+                                    ptrGrabResult);
+
+        }
+
+        nbuff++;
+        if (nbuff == 40)
+            break;
+    }
     // ----------------------
 
     // for (int i = 0; i < 1; i++)

@@ -1,9 +1,11 @@
 #include <iostream>
-#include "test.hpp"
+
 #include "camera.hpp"
 #include <thread>
 #include <chrono>
 #include <mutex>
+#include "optotrak.hpp"
+#include "aurora.hpp"
 
 
 
@@ -20,19 +22,23 @@ int main()
     {
         c[i] = std::thread(Grab_sync, CamIps[i]);
     }
-
+    std::thread t1(certus_test);
+    std::thread t2(aurora_test);
+    t1.detach();
+    t2.detach();
     for (int i = 0; i < 4; i++)
     {
         c[i].detach();
     }
+
     cout << "hello" << endl;
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::seconds(30));
     cam_ready = true;
 
 
 
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::this_thread::sleep_for(std::chrono::seconds(20));
     PylonTerminate();
 
 
