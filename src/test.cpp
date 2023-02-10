@@ -114,7 +114,7 @@ int Grab_MultipleCameras()
         }
 
         // Create an array of instant cameras for the found devices and avoid exceeding a maximum number of devices.
-        CInstantCameraArray cameras( min( devices.size(), c_maxCamerasToUse ) );
+        CInstantCameraArray cameras( min( devices.size(), 5 ) );
         
         // Create and attach all Pylon Devices.
         for (size_t i = 0; i < cameras.GetSize(); ++i)
@@ -169,7 +169,7 @@ int Grab_MultipleCameras()
         CGrabResultPtr ptrGrabResult;
 
         // Grab c_countOfImagesToGrab from the cameras.
-        for (uint32_t i = 0; i < c_countOfImagesToGrab && cameras.IsGrabbing(); ++i)
+        for (uint32_t i = 0; i < 10 && cameras.IsGrabbing(); ++i)
         {
             cameras.RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_ThrowException );
 
@@ -262,7 +262,7 @@ void GigEcameraCreateWithIp()
     CDeviceInfo di;
     di.SetIpAddress( "169.254.0.55");
     CBaslerUniversalInstantCamera camera( TlFactory.CreateDevice( di ) );
-
+    
 
 
 
@@ -326,10 +326,6 @@ void GigEcameraCreateWithIp()
 
 
 
-    // fprintf(logg, "exposure time : %s\n", CParameter(camera.GetNodeMap().GetNode("ExposureTimeAbs")).ToString().c_str());
-    // fprintf(logg, "frame rate: %s\n", CParameter(camera.GetNodeMap().GetNode("ResultingFrameRateAbs")).ToString().c_str());
-    // fprintf(logg, "readout time: %s\n", CParameter(camera.GetNodeMap().GetNode("ReadoutTimeAbs")).ToString().c_str());
-    // Print the model name of the camera.
     cout << "Using device " << 
     camera.GetDeviceInfo().GetModelName() << " " <<
     camera.GetDeviceInfo().GetIpAddress() << " " <<
@@ -340,9 +336,7 @@ void GigEcameraCreateWithIp()
     CParameter(camera.GetNodeMap().GetNode("ExposureTimeAbs")).ToString() << " " <<
     CParameter(camera.GetNodeMap().GetNode("ExposureTimeRaw")).ToString() << " " <<
     CParameter(camera.GetNodeMap().GetNode("ExposureTimeBaseAbs")).IsValid() << " " <<
-
     CParameter(camera.GetNodeMap().GetNode("ExposureMode")).ToString() << " " <<
-    // CParameter(cameras[i].GetNodeMap().GetNode("ExposureStartDelayAbs")).ToString() << " " <<
     CParameter(camera.GetNodeMap().GetNode("AcquisitionMode")).ToString() << " " <<
     CParameter(camera.GetNodeMap().GetNode("AcquisitionFrameRateEnable")).ToString() << " " <<
     CParameter(camera.GetNodeMap().GetNode("AcquisitionFrameRateAbs")).ToString() << " " <<
@@ -361,9 +355,8 @@ void GigEcameraCreateWithIp()
     camera.NumEmptyBuffers.GetValue() << " " <<
     camera.MaxNumGrabResults.GetValue() << " " <<
     camera.MaxNumQueuedBuffer.GetValue() << " " <<
-    camera.OutputQueueSize.GetValue() << " " <<
-    
-    endl;
+    camera.OutputQueueSize.GetValue() << " " << endl;
+
     //init: Using device acA1300-60gmNIR 169.254.0.55 BaslerGigE 21752969 1 1 5000 Timed Continuous 0 10 1280 1024 Mono8 Line1 RisingEdge FrameStart Off 14705 68.0041 Global 
     //set/: Using device acA1300-60gmNIR 169.254.0.55 BaslerGigE 21752969 1 1 5000 Timed Continuous 1 40 1280 1024 Mono8 Line1 RisingEdge FrameStart Off 14705 39.9904 Global 
 
@@ -399,7 +392,7 @@ void GigEcameraCreateWithIp()
     }
     camera.MaxNumBuffer = 15;
     camera.OutputQueueSize = 10;
-    camera.StartGrabbing(GrabStrategy_UpcomingImage);
+    camera.StartGrabbing(GrabStrategy_OneByOne);
     /*
         if busy after startgrabbing for a long while
         GrabStrategy_OneByOne: The images are processed in the order of their arrival.  the grab engine thread retrieves the image data and queues the buffers into the internal output queue.           
@@ -482,7 +475,9 @@ void GigEcameraCreateWithIp()
         }
         nBuffersInQueue++;
         camera.GevTimestampControlLatch.Execute(); 
-        cout << "after RetrieveResult: " << camera.GevTimestampValue.GetValue() << endl;
+        cout << "after RetrieveResult: " << camera.GevTimestampValue.GetValue() / 1000000 << endl;
+        auto t1 = std::chrono::system_clock::now().time_since_epoch().count();
+        cout << t1 / 10000 << endl;;
     }
     cout << "Retrieved " << nBuffersInQueue << " grab results from output queue." << endl << endl;
         

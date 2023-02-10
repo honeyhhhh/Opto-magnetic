@@ -40,8 +40,8 @@ using namespace Basler_UniversalCameraParams;
 #define CERTUS_SAMPLE_3020_STROBER_MARKERSTOFIRE	6
 
 
-static const uint32_t c_countOfImagesToGrab = 5;
-static const size_t c_maxCamerasToUse = 4;
+// static const uint32_t c_countOfImagesToGrab = 5;
+// static const size_t c_maxCamerasToUse = 4;
 
 struct ndicapi;
 
