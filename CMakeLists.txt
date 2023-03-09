@@ -29,6 +29,7 @@ message(STATUS "source code: " ${SRC_LIST})
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 
 include_directories(${OE_SOURCE_DIR}/include ${OE_SOURCE_DIR}/ndlib/include ${OE_SOURCE_DIR}/ndicapi/include)
