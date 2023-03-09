@@ -1,6 +1,13 @@
 #include "aurora.hpp"
 
 
+bool checkDSR = false;
+ndicapi* device(nullptr);
+const char* name(nullptr);
+const int MAX_SERIAL_PORTS = 16;
+const char* reply(nullptr);
+
+
 int aurora_init()
 {
     for (int i = 0; i < MAX_SERIAL_PORTS; ++i)
@@ -113,15 +120,16 @@ void aurora_stop()
     if (strncmp(reply, "ERROR", strlen(reply)) == 0 || ndiGetError(device) != NDI_OKAY)
     {
         std::cerr << "Error when sending command: " << ndiErrorString(ndiGetError(device)) << std::endl;
-        return EXIT_FAILURE;
     }
 
         // 关闭串口
     ndiCloseSerial(device);
 }
 
-void a_get_frame()
+unsigned __stdcall a_get_frame(LPVOID)
 {
+    std::cout << ::GetCurrentThreadId() << std::endl;
+
     std::ofstream fs("../mag_timestamp.txt", std::ios::out);
     std::ofstream fd("../mag_data.txt", std::ios::out);
     std::ofstream fn("../mag_num.txt", std::ios::out);
@@ -132,9 +140,14 @@ void a_get_frame()
     std::vector<unsigned long> frame_Number(500);
 
     // 进入屏障
-    ::EnterSynchronizationBarrier(sb, SYNCHRONIZATION_BARRIER_FLAGS_SPIN_ONLY);
+	std::cout << "aurora thread into barrier" << std::endl;
 
-    auto t1 = std::chrono::steady_clock::now();
+    PVOID p = &sb;
+    auto barrier = (PSYNCHRONIZATION_BARRIER)p;
+    ::EnterSynchronizationBarrier(barrier, SYNCHRONIZATION_BARRIER_FLAGS_SPIN_ONLY);
+	std::cout << "aurora thread start !" << std::endl;
+
+    auto t1 = std::chrono::system_clock::now();
     int frame_count = 0;
     while(1)
     {
@@ -150,34 +163,37 @@ void a_get_frame()
         int tfStatus = ndiGetTXTransform(device, 10, trans);
         frame_count++;
 
-        // fs << t << "\n";
-		// fd << trans[0] << " " << trans[1] << " " << trans[2] << " " << trans[3] << " " << trans[4] << " " << trans[5] << " " << trans[6] << " " << trans[7] << "\n";
-        mag_Time.push_back(t);
-        mag_Data.push_back(std::vector<double>(std::begin(trans), std::end(trans)));
-        frame_Number.push_back(frame_number);
+        fs << t << "\n";
+		fd << trans[0] << " " << trans[1] << " " << trans[2] << " " << trans[3] << " " << trans[4] << " " << trans[5] << " " << trans[6] << " " << trans[7] << "\n";
+        fn << frame_number << "\n";
+        // mag_Time.push_back(t);
+        // mag_Data.push_back(std::vector<double>(std::begin(trans), std::end(trans)));
+        // frame_Number.push_back(frame_number);
 
     }
 
     auto t2 = std::chrono::steady_clock::now();
-    double dr_ms = std::chrono::duration<double,std::milli>(t2-t1).count();
 
     // save
-	std::cout << "size" << mag_Time.size() << "\t" << mag_Data.size() << std::endl;
-    for (auto t : mag_Time)
-		fs << t << "\n";
-	for (auto t : mag_Data)
-		fd << t[0] << " " << t[1] << " " << t[2] << " " << t[3] << " " << t[4] << " " << t[5] << " " << t[6] << " " << t[7] << "\n";
-	for (auto t : frame_Number)
-		fn << t << "\n";
+    // for (auto t : mag_Time)
+	// 	fs << t << "\n";
+	// for (auto t : mag_Data)
+	// 	fd << t[0] << " " << t[1] << " " << t[2] << " " << t[3] << " " << t[4] << " " << t[5] << " " << t[6] << " " << t[7] << "\n";
+	// for (auto t : frame_Number)
+	// 	fn << t << "\n";
     auto t3 = std::chrono::steady_clock::now();
 
-    std::cout << "mag_frame_cout " << frame_count << "\t" << "times :" << t1.time_since_epoch().count() / 10000 << "~" << t2.time_since_epoch().count() / 10000<< "~" << t3.time_since_epoch().count() / 10000 << std::endl;
+    std::cout << "mag_frame_cout " << 0 << "\t";
+    std::cout << "times :" << t1.time_since_epoch().count() << "~";
+    std::cout << t2.time_since_epoch().count() << std::endl;
 
+    
     fs.close();
     fn.close();
     fd.close();
 
     //fprintf(logg, "frame_count :%d ; use time :%lf\n", frame_count, dr_ms);
     _endthreadex(0);
+    return 0;
 
 }

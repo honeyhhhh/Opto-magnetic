@@ -118,14 +118,15 @@ public:
     bool event_on;
 
     MyCamera();
-    void Init(string camip, bool evenon = false);
+    void Init(string camip);
     ~MyCamera();
     void PrintConfig();
     uint64_t Time_convert(uint64_t inter_ticks); // from camera ticks to system ticks
 
 };
 
-void cam_get_frame(MyCamera *cam);
+unsigned __stdcall cam_get_frame1(LPVOID c);
+
 
 
 

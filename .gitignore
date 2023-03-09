@@ -7,3 +7,6 @@ ndlib/build/*
 ndicapi/combinedAPI/*
 169*
 .DS_Store
+log*
+mag*
+opt*

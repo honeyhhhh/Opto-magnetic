@@ -29,7 +29,7 @@ message(STATUS "source code: " ${SRC_LIST})
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+# set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 
 include_directories(${OE_SOURCE_DIR}/include ${OE_SOURCE_DIR}/ndlib/include ${OE_SOURCE_DIR}/ndicapi/include)
@@ -61,10 +61,17 @@ else(Threads_FOUND)
     message(FATAL_ERROR "threads not found!")
 endif(Threads_FOUND)
 
+set(CSerialPortRootPath "${PROJECT_SOURCE_DIR}/CSerialPort")
+include_directories(${CSerialPortRootPath}/include)
+list(APPEND CSerialPortSourceFiles ${CSerialPortRootPath}/src/SerialPort.cpp ${CSerialPortRootPath}/src/SerialPortBase.cpp ${CSerialPortRootPath}/src/SerialPortInfo.cpp ${CSerialPortRootPath}/src/SerialPortInfoBase.cpp)
+if (WIN32)
+    list(APPEND CSerialPortSourceFiles ${CSerialPortRootPath}/src/SerialPortInfoWinBase.cpp ${CSerialPortRootPath}/src/SerialPortWinBase.cpp)
+else (UNIX)
+    list(APPEND CSerialPortSourceFiles ${CSerialPortRootPath}/src/SerialPortInfoUnixBase.cpp ${CSerialPortRootPath}/src/SerialPortUnixBase.cpp)
+endif()
 
 
-
-add_executable(OE ${SRC_LIST})
+add_executable(OE ${SRC_LIST} ${CSerialPortSourceFiles})
 
 target_link_libraries(OE PUBLIC Threads::Threads wsock32 ws2_32 ndicapi) # 嵌套顺序
 
@@ -74,3 +81,15 @@ target_link_libraries(OE PUBLIC pylon::pylon)
 target_link_libraries(OE PUBLIC oapi certus_aux)
 
 
+# add by itas109
+if (WIN32)
+    # for function availableFriendlyPorts
+    target_link_libraries(${PROJECT_NAME} PUBLIC setupapi)
+elseif(APPLE)
+    find_library(IOKIT_LIBRARY IOKit)
+    find_library(FOUNDATION_LIBRARY Foundation)
+    target_link_libraries( ${PROJECT_NAME} ${FOUNDATION_LIBRARY} ${IOKIT_LIBRARY})
+elseif(UNIX)
+        target_link_libraries( ${PROJECT_NAME} pthread)
+endif ()
+# end by itas109

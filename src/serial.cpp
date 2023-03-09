@@ -1,6 +1,9 @@
 #include "serial.hpp"
 
 
+CSerialPort sp;
+
+
 void search_port()
 {
     //mac m1 /dev/cu.usbserial-2140
@@ -11,7 +14,6 @@ void search_port()
     if (0 == m_availablePortsList.size())
     {
         std::cout << "No valid port" << std::endl;
-        return 0;
     }
     std::cout << "found port : ";
     for (auto i = m_availablePortsList.begin(); i != m_availablePortsList.end(); i++)
@@ -35,13 +37,9 @@ void send_code(const char *name, uint8_t d)
 
     if (sp.isOpen())
     {
-        std::cout << "open " << m_availablePortsList[0].portName << " success" << std::endl;
+        std::cout << "open " << name << " success" << std::endl;
     }
-    else
-    {
-        std::cout << "open " << m_availablePortsList[0].portName << " failed" << std::endl;
-        return 0;
-    }
+
     // 写入数据
     uint8_t code[1] = {d};
     sp.writeData(code, 1);

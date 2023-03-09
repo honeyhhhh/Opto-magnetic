@@ -1,4 +1,5 @@
 #include "camera.hpp"
+#include "serial.hpp"
 
 
 inline int bmpEncoder(const std::string &location,
@@ -91,10 +92,10 @@ MyCamera::MyCamera()
 
 }
 
-void MyCamera::Init(string camip, bool evenon = false)
+void MyCamera::Init(string camip)
 {
     cam_ip = camip;
-    event_on = evenon;
+    event_on = false;
 
     auto t0 = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
     cout << "init camera :" << cam_ip << " at " << t0 << endl; // cameras ticks same ? set min?
@@ -123,9 +124,9 @@ void MyCamera::Init(string camip, bool evenon = false)
 
 
 
-    camera.ExposureTimeAbs.TrySetValue(15000.0);
-    camera.AcquisitionFrameRateEnable.SetValue(true);
-    camera.AcquisitionFrameRateAbs.SetValue(40.0);
+    camera.ExposureTimeAbs.TrySetValue(5000.0);
+    camera.AcquisitionFrameRateEnable.SetValue(false);
+    // camera.AcquisitionFrameRateAbs.SetValue(40.0);
     camera.Width.SetValue(1280);
     camera.Height.SetValue(1024);
     // camera.TriggerMode.SetValue(TriggerMode_Off);
@@ -152,29 +153,28 @@ void MyCamera::Init(string camip, bool evenon = false)
                 camera.EventNotification.SetValue( EventNotification_GenICamEvent );
             }
         }
-    if (camera.EventSelector.TrySetValue( EventSelector_FrameStart ))
-        {   // Enable it.
-            if (!camera.EventNotification.TrySetValue( EventNotification_On ))
-            {
-                    // scout-f, scout-g, and aviator GigE cameras use a different value.
-                camera.EventNotification.SetValue( EventNotification_GenICamEvent );
+        if (camera.EventSelector.TrySetValue( EventSelector_FrameStart ))
+            {   // Enable it.
+                if (!camera.EventNotification.TrySetValue( EventNotification_On ))
+                {
+                        // scout-f, scout-g, and aviator GigE cameras use a different value.
+                    camera.EventNotification.SetValue( EventNotification_GenICamEvent );
+                }
             }
-        }
-    if (camera.EventSelector.TrySetValue( EventSelector_AcquisitionStart ))
-        {   // Enable it.
-            if (!camera.EventNotification.TrySetValue( EventNotification_On ))
-            {
-                    // scout-f, scout-g, and aviator GigE cameras use a different value.
-                camera.EventNotification.SetValue( EventNotification_GenICamEvent );
+        if (camera.EventSelector.TrySetValue( EventSelector_AcquisitionStart ))
+            {   // Enable it.
+                if (!camera.EventNotification.TrySetValue( EventNotification_On ))
+                {
+                        // scout-f, scout-g, and aviator GigE cameras use a different value.
+                    camera.EventNotification.SetValue( EventNotification_GenICamEvent );
+                }
             }
-        }
     }
 
     camera.MaxNumBuffer = 5;
     camera.OutputQueueSize = 5;
 
-
-    camera.StartGrabbing(GrabStrategy_UpcomingImage);
+    PrintConfig();
     auto t4 = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
     std::cout << camip << " initdone at " << t4  << std::endl;
 }
@@ -230,15 +230,16 @@ void MyCamera::PrintConfig()
 uint64_t MyCamera::Time_convert(uint64_t inter_ticks)
 {
     uint64_t t = inter_ticks / 1000000;
-    return t + this.time_differ;
+    return t + this->time_differ;
 }
 
 
 
 
 
-void cam_get_frame(MyCamera *camera)
+unsigned __stdcall cam_get_frame1(LPVOID c)
 {
+    MyCamera *camera = (MyCamera *)c;
     std::ofstream fs((std::string(std::string("../" + camera->cam_ip + "/") + "time.txt")).c_str(), std::ios::out);
     std::ofstream fn((std::string(std::string("../" + camera->cam_ip + "/") + "num.txt")).c_str(), std::ios::out);
 
@@ -248,28 +249,37 @@ void cam_get_frame(MyCamera *camera)
     CBaslerUniversalGrabResultPtr ptrGrabResult;
     std::vector<uint64_t> cam_Time(500);
     std::vector<unsigned long> frame_Number(500);
-    std::vector<std::vector<uint8_t> > cam_Data (500, std::vector<uint8_t>(bufferSize));
+    std::vector<std::vector<uint8_t> > cam_Data (200, std::vector<uint8_t>(bufferSize));
+
 
 
     // 进入屏障
-    ::EnterSynchronizationBarrier(sb, SYNCHRONIZATION_BARRIER_FLAGS_SPIN_ONLY);
+	std::cout << camera->cam_ip << " thread into barrier" << std::endl;
+    PVOID p = &sb;
+    auto barrier = (PSYNCHRONIZATION_BARRIER)p;
+    ::EnterSynchronizationBarrier(barrier, SYNCHRONIZATION_BARRIER_FLAGS_SPIN_ONLY);
+	std::cout << camera->cam_ip << " thread start !" << std::endl;
+    camera->camera.StartGrabbing(GrabStrategy_UpcomingImage);//GrabStrategy_UpcomingImage
+    // 相机硬件触发
+    send_code("COM9", 3);
 
     auto t1 = std::chrono::system_clock::now();
 
-    while (camera->RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_Return ))
+    while (camera->camera.IsGrabbing())
     {
         // auto t5 = std::chrono::system_clock::now().time_since_epoch().count();
         // cout << "camera : " << camera.GetDeviceInfo().GetIpAddress() << " ";
         // cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << "\tExposure start ts: " << Time_convert(ptrGrabResult->GetTimeStamp()) + 50 << " " << t5/10000 << " " << ptrGrabResult->GetNumberOfSkippedImages() << endl;
-
+        camera->camera.RetrieveResult( 10000, ptrGrabResult, TimeoutHandling_Return );
         if (ptrGrabResult->GrabSucceeded())
         {
             uint64_t f = camera->Time_convert(ptrGrabResult->GetTimeStamp()); //exposure start
+            fs << f << "\n";
             const uint8_t* pImageBuffer = (uint8_t*) ptrGrabResult->GetBuffer();
             std::vector<uint8_t> t(pImageBuffer, pImageBuffer + bufferSize);
 
-            cam_Time.push_back(f);
-            cam_Data.push_back(t);
+            // cam_Time.push_back(f);
+            // cam_Data.push_back(t);
         }
 
 		if (WaitForSingleObject(gDoneEvent, 0) == WAIT_OBJECT_0)
@@ -280,30 +290,32 @@ void cam_get_frame(MyCamera *camera)
 
     auto t2 = std::chrono::steady_clock::now();
     // save
-	std::cout << "size" << cam_Time.size() << "\t" << cam_Data.size() << std::endl;
-    for (auto t : cam_Time)
-		fs << t << "\n";
+	// std::cout << "size" << cam_Time.size() << "\t" << cam_Data.size() << std::endl;
+    // for (auto t : cam_Time)
+	// 	fs << t << "\n";
 
-    int i = 0;
-    for (auto t : data)
-    {
-        bmpEncoder(std::string(std::string("../" + camera->cam_ip + "/") + to_string(i) + ".bmp"), 1280, 1024, t, false);
-        i++;
-    }
+    // int i = 0;
+    // for (auto t : cam_Data)
+    // {
+    //     bmpEncoder(std::string(std::string("../" + camera->cam_ip + "/") + to_string(i) + ".bmp"), 1280, 1024, t, false);
+    //     i++;
+    // }
 
 
     auto t3 = std::chrono::steady_clock::now();
 
-    std::cout << "cam_frame_cout " << 0 << "\t" << "times :" << t1.time_since_epoch().count() / 10000 << "~" << t2.time_since_epoch().count() / 10000<< "~" << t3.time_since_epoch().count() / 10000 << std::endl;
+    std::cout << "ip " << camera->cam_ip << "\t";
+    std::cout << "times :" << t1.time_since_epoch().count() << "~";
+    std::cout << t2.time_since_epoch().count() << std::endl;
 
     fs.close();
     fn.close();
 
 
-    camera->StopGrabbing();
+    camera->camera.StopGrabbing();
     _endthreadex(0);
+    return 0;
 }
-
 
 
 

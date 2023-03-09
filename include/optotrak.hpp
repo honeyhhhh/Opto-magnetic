@@ -30,13 +30,13 @@ extern "C"
 #define CERTUS_SAMPLE_STROBER_MARKERSTOFIRE		2
 #define CERTUS_SAMPLE_3020_STROBER_MARKERSTOFIRE	6
 
-OptotrakSettings dtSettings;
-char szNDErrorString[MAX_ERROR_STRING_LENGTH + 1];
-char szProperty[32];
+extern OptotrakSettings dtSettings;
+extern char szNDErrorString[MAX_ERROR_STRING_LENGTH + 1];
+extern char szProperty[32];
 
 
 int certus_init();
-void c_get_frame();
+unsigned __stdcall c_get_frame(LPVOID);
 void certus_stop();
 int certus_error_exit();
 

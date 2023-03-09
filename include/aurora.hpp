@@ -12,17 +12,17 @@
 #include "sync.hpp"
 #include <vector>
 
-bool checkDSR = false;
-ndicapi* device(nullptr);
-const char* name(nullptr);
-const int MAX_SERIAL_PORTS = 16;
-const char* reply(nullptr)
+extern bool checkDSR;
+extern ndicapi* device;
+extern const char* name;
+extern const int MAX_SERIAL_PORTS;
+extern const char* reply;
 
 
 
 
 
-void a_get_frame();
+unsigned __stdcall a_get_frame(LPVOID);
 int aurora_init();
 void aurora_stop();
 

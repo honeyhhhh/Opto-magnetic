@@ -1,6 +1,11 @@
 #include "optotrak.hpp"
 
 
+
+OptotrakSettings dtSettings;
+char szNDErrorString[MAX_ERROR_STRING_LENGTH + 1];
+char szProperty[32];
+
 static void sleep( unsigned int uSec )
 {
 	Sleep(uSec * 1000 );
@@ -43,7 +48,7 @@ static void DisplayMarker( int nMarker, Position3d dtPosition3d )
 } /* DisplayMarker */
 
 
-void certus_init()
+int certus_init()
 {
     // int i;
 	// int nCurDevice;
@@ -218,7 +223,7 @@ int certus_error_exit()
 	//fprintf( stdout, "\nAn error has occurred during execution of the program.\n" );
     if( OptotrakGetErrorString( szNDErrorString, MAX_ERROR_STRING_LENGTH + 1 ) == 0 )
     {
-        cout << szNDErrorString << endl;
+        std::cout << szNDErrorString << std::endl;
     }
 	OptotrakDeActivateMarkers( );
 	TransputerShutdownSystem( );
@@ -240,8 +245,10 @@ int certus_error_exit()
 
 
 
-void c_get_frame()
+unsigned __stdcall c_get_frame(LPVOID)
 {
+    std::cout << ::GetCurrentThreadId() << std::endl;
+
 
     /*
      * Get frame of 3D data.
@@ -265,9 +272,12 @@ void c_get_frame()
     std::vector<std::vector<double> > opt_Data (2500, std::vector<double>(3));
     std::vector<unsigned int> frame_Number(2500);
 
-
-    // 进入屏障
-    ::EnterSynchronizationBarrier(sb, SYNCHRONIZATION_BARRIER_FLAGS_SPIN_ONLY);
+	// 进入屏障
+	std::cout << "certus thread into barrier" << std::endl;
+    PVOID p = &sb;
+    auto barrier = (PSYNCHRONIZATION_BARRIER)p;
+    ::EnterSynchronizationBarrier(barrier, SYNCHRONIZATION_BARRIER_FLAGS_SPIN_ONLY);
+	std::cout << "certus thread start" << std::endl;
 
     auto t1 = std::chrono::steady_clock::now();
 
@@ -293,9 +303,12 @@ void c_get_frame()
         auto t = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
         for(int nCurMarker = 0; nCurMarker < dtSettings.nMarkers - 1; nCurMarker++)
         {
-			opt_Time.push_back(t);
-			opt_Data.push_back(std::vector<double>(std::begin(p3dData), std::end(p3dData)));
-			frame_Number.push_back(uFrameNumber);
+			fs << t << "\n";
+			fd << p3dData[nCurMarker].x << " " << p3dData[nCurMarker].y << " " << p3dData[nCurMarker].z << "\n";
+			fn << uFrameNumber << "\n";
+			// opt_Time.push_back(t);
+			// opt_Data.push_back(std::vector<double>({p3dData[nCurMarker].x, p3dData[nCurMarker].y, p3dData[nCurMarker].z}));
+			// frame_Number.push_back(uFrameNumber);
 
 			preFrameNumber = uFrameNumber;
 			ndata++;
@@ -305,26 +318,26 @@ void c_get_frame()
     }
 
     auto t2 = std::chrono::steady_clock::now();
-    double dr_ms = std::chrono::duration<double,std::milli>(t2-t1).count();
 
 	// save
-	std::cout << "size" << opt_Time.size() << "\t" << opt_Data.size() << std::endl;
-	for (auto t : opt_Time)
-		fs << t << "\n";
-	for (auto t : opt_Data)
-		fd << t[0] << " " << t[1] << " " << t[2] << "\n";
-	for (auto t : frame_Number)
-		fn << t << "\n";
+	// for (auto t : opt_Time)
+	// 	fs << t << "\n";
+	// for (auto t : opt_Data)
+	// 	fd << t[0] << " " << t[1] << " " << t[2] << "\n";
+	// for (auto t : frame_Number)
+	// 	fn << t << "\n";
     auto t3 = std::chrono::steady_clock::now();
 
-    std::cout << "opt_frame_cout " << ndata << "\t" << "times :" << t1.time_since_epoch().count() / 10000 << "~" << t2.time_since_epoch().count() / 10000<< "~" << t3.time_since_epoch().count() / 10000 << std::endl;
-
+    std::cout << "opt_frame_cout " << 0 << "\t";
+    std::cout << "times :" << t1.time_since_epoch().count() << "~";
+    std::cout << t2.time_since_epoch().count() << std::endl;
 
     fs.close();
     fn.close();
     fd.close();
 	free(p3dData);
     _endthreadex(0);
+	return 0;
 
 
 }

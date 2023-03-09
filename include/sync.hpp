@@ -10,18 +10,14 @@
 #include <windows.h>
 #include <process.h>
 
-std::mutex cam_mutex;
-std::condition_variable cam_cond;
-int cam_latch = 4;
-bool cam_ready = false;
 
 
-SYSTEM_INFO info;
-SYNCHRONIZATION_BARRIER sb;
+extern SYSTEM_INFO info;
+extern SYNCHRONIZATION_BARRIER sb;
 
-HANDLE hTimer = NULL;
-HANDLE hTimerQueue = NULL;
-HANDLE gDoneEvent;
+extern HANDLE hTimer;
+extern HANDLE hTimerQueue;
+extern HANDLE gDoneEvent;
 
 
 
