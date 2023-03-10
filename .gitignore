@@ -10,3 +10,4 @@ ndicapi/combinedAPI/*
 log*
 mag*
 opt*
+CSerialPort
