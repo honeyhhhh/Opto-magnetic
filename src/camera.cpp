@@ -110,17 +110,7 @@ void MyCamera::Init(string camip)
 
     camera.Open();
 
-
-    camera.GevTimestampControlReset();
-    auto t1 = std::chrono::system_clock::now().time_since_epoch().count();
-    camera.GevTimestampControlLatch.Execute();
-    auto t2 = std::chrono::system_clock::now().time_since_epoch().count();
-    auto tt = camera.GevTimestampValue.GetValue() / 1000000;
-
-    auto t3 = (t1 + t2) / 2 / 10000; 
-    time_differ = t3 - tt;
-    // cout << "camera :" << camip << " at " << t1/10000 << " " << t2/10000 << " in " << tt << endl;
-
+    Sleep(50);
 
 
 
@@ -174,9 +164,7 @@ void MyCamera::Init(string camip)
     camera.MaxNumBuffer = 5;
     camera.OutputQueueSize = 5;
 
-    PrintConfig();
-    auto t4 = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
-    std::cout << camip << " initdone at " << t4  << std::endl;
+
 }
 
 
@@ -251,17 +239,35 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
     std::vector<unsigned long> frame_Number(500);
     std::vector<std::vector<uint8_t> > cam_Data (200, std::vector<uint8_t>(bufferSize));
 
+    // sync clock
+    PVOID pt = &sb_cam;
+    auto barrier_t = (PSYNCHRONIZATION_BARRIER)pt;
+    ::EnterSynchronizationBarrier(barrier_t, SYNCHRONIZATION_BARRIER_FLAGS_SPIN_ONLY);
+    camera->camera.GevTimestampControlReset();
+    Sleep(50);
+    auto tt1 = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
+    camera->camera.GevTimestampControlLatch.Execute();
+    auto tt2 = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
+    auto tt = camera->camera.GevTimestampValue.GetValue() / 1000000;
+    auto tt3 = (tt1 + tt2) / 2; 
+    camera->time_differ = tt3 - tt;
+    cout << camera->time_differ << endl;
 
+    camera->camera.StartGrabbing(GrabStrategy_UpcomingImage);//GrabStrategy_UpcomingImage
+    Sleep(50);
 
-    // 进入屏障
+    // 进入屏障 sync grab
 	std::cout << camera->cam_ip << " thread into barrier" << std::endl;
     PVOID p = &sb;
     auto barrier = (PSYNCHRONIZATION_BARRIER)p;
     ::EnterSynchronizationBarrier(barrier, SYNCHRONIZATION_BARRIER_FLAGS_SPIN_ONLY);
 	std::cout << camera->cam_ip << " thread start !" << std::endl;
-    camera->camera.StartGrabbing(GrabStrategy_UpcomingImage);//GrabStrategy_UpcomingImage
-    // 相机硬件触发
-    send_code("COM9", 3);
+
+
+
+    // // 相机硬件触发
+    // send_code("COM9", 4);
+    // send_code("COM9", 3);
 
     auto t1 = std::chrono::system_clock::now();
 
@@ -288,7 +294,7 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
 		}
     }
 
-    auto t2 = std::chrono::steady_clock::now();
+    auto t2 = std::chrono::system_clock::now();
     // save
 	// std::cout << "size" << cam_Time.size() << "\t" << cam_Data.size() << std::endl;
     // for (auto t : cam_Time)
@@ -302,7 +308,7 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
     // }
 
 
-    auto t3 = std::chrono::steady_clock::now();
+    // auto t3 = std::chrono::system_clock::now();
 
     std::cout << "ip " << camera->cam_ip << "\t";
     std::cout << "times :" << t1.time_since_epoch().count() << "~";

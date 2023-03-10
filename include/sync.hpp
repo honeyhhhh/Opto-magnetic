@@ -14,6 +14,8 @@
 
 extern SYSTEM_INFO info;
 extern SYNCHRONIZATION_BARRIER sb;
+extern SYNCHRONIZATION_BARRIER sb_cam;
+
 
 extern HANDLE hTimer;
 extern HANDLE hTimerQueue;

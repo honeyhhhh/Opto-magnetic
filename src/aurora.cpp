@@ -172,7 +172,7 @@ unsigned __stdcall a_get_frame(LPVOID)
 
     }
 
-    auto t2 = std::chrono::steady_clock::now();
+    auto t2 = std::chrono::system_clock::now();
 
     // save
     // for (auto t : mag_Time)
@@ -181,9 +181,9 @@ unsigned __stdcall a_get_frame(LPVOID)
 	// 	fd << t[0] << " " << t[1] << " " << t[2] << " " << t[3] << " " << t[4] << " " << t[5] << " " << t[6] << " " << t[7] << "\n";
 	// for (auto t : frame_Number)
 	// 	fn << t << "\n";
-    auto t3 = std::chrono::steady_clock::now();
+    // auto t3 = std::chrono::steady_clock::now();
 
-    std::cout << "mag_frame_cout " << 0 << "\t";
+    std::cout << "mag_frame_cout " << frame_count << "\t";
     std::cout << "times :" << t1.time_since_epoch().count() << "~";
     std::cout << t2.time_since_epoch().count() << std::endl;
 

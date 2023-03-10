@@ -279,7 +279,7 @@ unsigned __stdcall c_get_frame(LPVOID)
     ::EnterSynchronizationBarrier(barrier, SYNCHRONIZATION_BARRIER_FLAGS_SPIN_ONLY);
 	std::cout << "certus thread start" << std::endl;
 
-    auto t1 = std::chrono::steady_clock::now();
+    auto t1 = std::chrono::system_clock::now();
 
 
     while (1)
@@ -317,7 +317,7 @@ unsigned __stdcall c_get_frame(LPVOID)
 
     }
 
-    auto t2 = std::chrono::steady_clock::now();
+    auto t2 = std::chrono::system_clock::now();
 
 	// save
 	// for (auto t : opt_Time)
@@ -326,9 +326,8 @@ unsigned __stdcall c_get_frame(LPVOID)
 	// 	fd << t[0] << " " << t[1] << " " << t[2] << "\n";
 	// for (auto t : frame_Number)
 	// 	fn << t << "\n";
-    auto t3 = std::chrono::steady_clock::now();
 
-    std::cout << "opt_frame_cout " << 0 << "\t";
+    std::cout << "opt_frame_cout " << ndata << "\t";
     std::cout << "times :" << t1.time_since_epoch().count() << "~";
     std::cout << t2.time_since_epoch().count() << std::endl;
 
