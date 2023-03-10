@@ -1,0 +1,33 @@
+Number of processors: 6
+init camera :169.254.0.22 at 1678443005573
+done
+init camera :169.254.0.55 at 1678443006101
+done
+init camera :169.254.0.44 at 1678443006618
+done
+init camera :169.254.0.33 at 1678443007139
+done
+set thread
+wakeup thread
+1678443007767
+1678443007768
+16784430077671678443007767
+
+169.254.0.22 thread into barrier
+169.254.0.44 thread into barrier
+169.254.0.55 thread into barrier
+169.254.0.33 thread into barrier
+169.254.0.33169.254.0.22 thread start !
+169.254.0.44 thread start !
+169.254.0.55 thread start !
+ thread start !
+open COM9 success
+start timer at 1678443007905
+wait thread
+end timer at 1678443012906
+ip 169.254.0.22 times :16784430079032151~16784430129269281
+ip 169.254.0.55 times :16784430079035977~16784430129272551
+ip 169.254.0.33 times :16784430079036824~16784430129270639
+ip 169.254.0.44 times :16784430079034034~16784430129269578
+0
+shutdown system !
