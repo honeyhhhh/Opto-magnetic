@@ -2,90 +2,6 @@
 #include "serial.hpp"
 
 
-inline int bmpEncoder(const std::string &location,
-    const unsigned __int32 &width, const unsigned __int32 &height,
-    const std::vector<BYTE> &buffer,
-    const bool &hasAlphaChannel = false) {
-
-    
-    std::ofstream fout(location, std::ios::out | std::ios::binary);
-
-    if (fout.fail()) {
-        return 0;
-    }
-
-    //Padding
-    const unsigned __int8 padding = hasAlphaChannel ? 0 : (4 - (width * 3) % 4) % 4;
-
-    //Bitmap file header.
-    const char signature[2] = { 'B', 'M' };
-    const unsigned __int32 fileSize = buffer.size() * sizeof(BYTE) + padding * (height - 1) + 14 + 124;
-    const unsigned __int32 offset = 14 + 124;
-
-    //Bitmap information header file
-    const unsigned __int32 DIBSize = 124;
-    const __int32 bitmapWidth = width;
-    const __int32 bitmapHeight = height;
-    const unsigned __int16 numPlanes = 1;
-    const unsigned __int16 bitsPerPixel = (hasAlphaChannel) ? 32 : 24;
-    const unsigned __int32 compressionMethod = (hasAlphaChannel) ? 3 : 0; //BI_RGB = 0, BI_BITFIELDS = 3
-    const unsigned __int32 bitmapSize = buffer.size() * sizeof(BYTE);
-    const __int32 horizontalResolution = 2834;
-    const __int32 verticalResolution = 2834;
-    const unsigned __int32 numColors = 0;
-    const unsigned __int32 impColorCount = 0;
-    const unsigned __int32 redBitmask = (hasAlphaChannel) ? 0x0000FF00 : 0; //ARGB32 pixel format
-    const unsigned __int32 greenBitmask = (hasAlphaChannel) ? 0x00FF0000 : 0;
-    const unsigned __int32 blueBitmask = (hasAlphaChannel) ? 0xFF000000 : 0;
-    const unsigned __int32 alphaBitmask = (hasAlphaChannel) ? 0x000000FF : 0;
-
-    //Writing the file header and information header to the file 
-    std::vector<BYTE> header(offset, 0);
-    header[0] = signature[0];
-    header[1] = signature[1];
-
-#define HEADERS(i, variableName)    header[i] = variableName; header[i+1] = variableName >> 8; header[i+2] = variableName >> 16; header[i+3] = variableName >> 24;
-
-    HEADERS(2, fileSize);
-    HEADERS(6, 0);
-    HEADERS(10, offset);
-    HEADERS(14, DIBSize);
-    HEADERS(18, bitmapWidth);
-    HEADERS(22, bitmapHeight);
-
-    header[26] = (BYTE)numPlanes;
-    header[27] = (BYTE)(numPlanes >> 8);
-    header[28] = (BYTE)bitsPerPixel;
-    header[29] = (BYTE)(bitsPerPixel >> 8);
-
-    HEADERS(30, compressionMethod);
-    HEADERS(34, bitmapSize);
-    HEADERS(38, horizontalResolution);
-    HEADERS(42, verticalResolution);
-    HEADERS(46, numColors);
-    HEADERS(50, impColorCount);
-    HEADERS(54, redBitmask);
-    HEADERS(58, greenBitmask);
-    HEADERS(62, blueBitmask);
-    HEADERS(66, alphaBitmask);
-
-#undef HEADERS
-
-    fout.write((char *)header.data(), sizeof(BYTE) * header.size());
-
-    //Writing the pixel array
-    const unsigned __int32 bWidth = bitsPerPixel / 8 * width;
-
-    for (int i = height - 1; i >= 0; i--) {
-        std::vector<BYTE> row(buffer.begin() + i * bWidth, buffer.begin() + i * bWidth + bWidth);
-        fout.write((char *)row.data(), row.size() * sizeof(BYTE));
-        fout.seekp(padding * sizeof(BYTE), std::ios::cur);
-    }
-
-    fout.close();
-    return 1;
-}
-
 
 MyCamera::MyCamera()
 {
@@ -95,7 +11,7 @@ MyCamera::MyCamera()
 void MyCamera::Init(string camip)
 {
     cam_ip = camip;
-    event_on = false;
+    event_on = true;
 
     auto t0 = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
     cout << "init camera :" << cam_ip << " at " << t0 << endl; // cameras ticks same ? set min?
@@ -105,8 +21,9 @@ void MyCamera::Init(string camip)
     di.SetIpAddress(cam_ip.c_str());
 
     camera.Attach(TlFactory.CreateDevice(di));
-
-
+    pHandler1 = new CSampleCameraEventHandler(camip);
+    pHandler2 = new CSampleImageEventHandler(camip);
+    camera.GrabCameraEvents = true;
 
     camera.Open();
 
@@ -114,7 +31,7 @@ void MyCamera::Init(string camip)
 
 
 
-    camera.ExposureTimeAbs.TrySetValue(5000.0);
+    camera.ExposureTimeAbs.TrySetValue(10000.0);
     camera.AcquisitionFrameRateEnable.SetValue(false);
     // camera.AcquisitionFrameRateAbs.SetValue(40.0);
     camera.Width.SetValue(1280);
@@ -127,13 +44,12 @@ void MyCamera::Init(string camip)
 
     if (event_on)
     {
-        CSampleCameraEventHandler* pHandler1 = new CSampleCameraEventHandler;
-        camera.RegisterImageEventHandler( new CSampleImageEventHandler, RegistrationMode_Append, Cleanup_Delete );
-        camera.GrabCameraEvents = true;
+
+        camera.RegisterImageEventHandler( pHandler2, RegistrationMode_Append, Cleanup_Delete );
 
         camera.RegisterCameraEventHandler( pHandler1, "ExposureEndEventData", eMyExposureEndEvent, RegistrationMode_ReplaceAll, Cleanup_None );
-        camera.RegisterCameraEventHandler( pHandler1, "FrameStartEventTimestamp", eMyFrameStartEvent, RegistrationMode_Append, Cleanup_None );
-        camera.RegisterCameraEventHandler( pHandler1, "AcquisitionStartEventTimestamp", eMyAcquisitionStartEvent, RegistrationMode_Append, Cleanup_None );
+        // camera.RegisterCameraEventHandler( pHandler1, "FrameStartEventTimestamp", eMyFrameStartEvent, RegistrationMode_Append, Cleanup_None );
+        // camera.RegisterCameraEventHandler( pHandler1, "AcquisitionStartEventTimestamp", eMyAcquisitionStartEvent, RegistrationMode_Append, Cleanup_None );
 
         if (camera.EventSelector.TrySetValue( EventSelector_ExposureEnd ))
         {   // Enable it.
@@ -143,33 +59,35 @@ void MyCamera::Init(string camip)
                 camera.EventNotification.SetValue( EventNotification_GenICamEvent );
             }
         }
-        if (camera.EventSelector.TrySetValue( EventSelector_FrameStart ))
-            {   // Enable it.
-                if (!camera.EventNotification.TrySetValue( EventNotification_On ))
-                {
-                        // scout-f, scout-g, and aviator GigE cameras use a different value.
-                    camera.EventNotification.SetValue( EventNotification_GenICamEvent );
-                }
-            }
-        if (camera.EventSelector.TrySetValue( EventSelector_AcquisitionStart ))
-            {   // Enable it.
-                if (!camera.EventNotification.TrySetValue( EventNotification_On ))
-                {
-                        // scout-f, scout-g, and aviator GigE cameras use a different value.
-                    camera.EventNotification.SetValue( EventNotification_GenICamEvent );
-                }
-            }
+        // if (camera.EventSelector.TrySetValue( EventSelector_FrameStart ))
+        //     {   // Enable it.
+        //         if (!camera.EventNotification.TrySetValue( EventNotification_On ))
+        //         {
+        //                 // scout-f, scout-g, and aviator GigE cameras use a different value.
+        //             camera.EventNotification.SetValue( EventNotification_GenICamEvent );
+        //         }
+        //     }
+        // if (camera.EventSelector.TrySetValue( EventSelector_AcquisitionStart ))
+        //     {   // Enable it.
+        //         if (!camera.EventNotification.TrySetValue( EventNotification_On ))
+        //         {
+        //                 // scout-f, scout-g, and aviator GigE cameras use a different value.
+        //             camera.EventNotification.SetValue( EventNotification_GenICamEvent );
+        //         }
+        //     }
     }
 
     camera.MaxNumBuffer = 5;
     camera.OutputQueueSize = 5;
 
-
+    std::cout << "done" << std::endl;
 }
 
 
 MyCamera::~MyCamera()
 {
+    delete pHandler1;
+    delete pHandler2;
     if (event_on)
     {
         camera.EventSelector.SetValue( EventSelector_ExposureEnd );
@@ -264,11 +182,6 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
 	std::cout << camera->cam_ip << " thread start !" << std::endl;
 
 
-
-    // // 相机硬件触发
-    // send_code("COM9", 4);
-    // send_code("COM9", 3);
-
     auto t1 = std::chrono::system_clock::now();
 
     while (camera->camera.IsGrabbing())
@@ -280,7 +193,8 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
         if (ptrGrabResult->GrabSucceeded())
         {
             uint64_t f = camera->Time_convert(ptrGrabResult->GetTimeStamp()); //exposure start
-            fs << f << "\n";
+            auto ff = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
+            fs << f << " " << ff << "\n";
             const uint8_t* pImageBuffer = (uint8_t*) ptrGrabResult->GetBuffer();
             std::vector<uint8_t> t(pImageBuffer, pImageBuffer + bufferSize);
 
@@ -316,7 +230,8 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
 
     fs.close();
     fn.close();
-
+    camera->pHandler1->fss.close();
+    camera->pHandler2->fs.close();
 
     camera->camera.StopGrabbing();
     _endthreadex(0);

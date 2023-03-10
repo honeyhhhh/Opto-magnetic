@@ -58,7 +58,9 @@ public:
 
 class CSampleCameraEventHandler : public CBaslerUniversalCameraEventHandler
 {
+
 public:
+    std::ofstream fss;
     // Only very short processing tasks should be performed by this method. Otherwise, the event notification will block the
     // processing of images.
     virtual void OnCameraEvent( CBaslerUniversalInstantCamera& camera, intptr_t userProvidedId, GenApi::INode* /* pNode */ )
@@ -67,7 +69,8 @@ public:
         switch (userProvidedId)
         {
             case eMyExposureEndEvent: // Exposure End event
-                cout << "Exposure End event. FrameID: " << camera.ExposureEndEventFrameID.GetValue() << " Timestamp: " << camera.ExposureEndEventTimestamp.GetValue() / 1000000 << std::endl;
+                fss << camera.ExposureEndEventFrameID.GetValue() << " " << camera.ExposureEndEventTimestamp.GetValue() << "\n";
+                // std::cout << "Exposure End event. FrameID: " << camera.ExposureEndEventFrameID.GetValue() << " Timestamp: " << camera.ExposureEndEventTimestamp.GetValue() / 1000000 << std::endl;
                 break;
             case eMyFrameStartOvertrigger:
                 cout << "FrameStartOvertrigger event. Timestamp: " << camera.FrameStartOvertriggerEventTimestamp.GetValue() / 1000000 << std::endl;
@@ -83,28 +86,48 @@ public:
                 break;
         }
     }
+    CSampleCameraEventHandler() {}
+
+    CSampleCameraEventHandler(string ip)
+    {
+        fss.open((std::string(std::string("../" + ip + "/") + "exend_time.txt")).c_str(), std::ios::out);
+    }
+    ~CSampleCameraEventHandler()
+    {
+
+    }
 };
 //Example of an image event handler.
 class CSampleImageEventHandler : public CBaslerUniversalImageEventHandler
 {
 public:
+    std::ofstream fs;
+
     virtual void OnImageGrabbed( CBaslerUniversalInstantCamera& camera, const CBaslerUniversalGrabResultPtr& ptrGrabResult )
     {
         if (ptrGrabResult->GrabSucceeded())
         {
-            cout << "camera : " << camera.GetDeviceInfo().GetIpAddress() << " ";
-            cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << "\tExposure start ts: " << ptrGrabResult->GetTimeStamp() / 1000000 << " " << ptrGrabResult->GetNumberOfSkippedImages() << endl;
-            if (ptrGrabResult->ChunkTimestamp.IsReadable())
-                cout << "OnImageGrabbed: TimeStamp (Result) : " << ptrGrabResult->ChunkTimestamp.GetValue() << endl;
-            if (ptrGrabResult->ChunkExposureTime.IsReadable())
-                cout << "OnImageGrabbed: ExposureTime (Result) : " << ptrGrabResult->ChunkExposureTime.GetValue() << endl;
-            if (ptrGrabResult->ChunkFramecounter.IsReadable()) // frame start /  at 0
-                cout << "OnImageGrabbed: Framecouter (Result) : " << ptrGrabResult->ChunkFramecounter.GetValue() << endl;
-            if (ptrGrabResult->ChunkTriggerinputcounter.IsReadable())
-                cout << "OnImageGrabbed: Triggerinputcounter (Result) : " << ptrGrabResult->ChunkTriggerinputcounter.GetValue() << endl;
-
-            
+            fs << ptrGrabResult->GetTimeStamp() << " " << ptrGrabResult->GetNumberOfSkippedImages() << "\n";
+            // cout << "camera : " << camera.GetDeviceInfo().GetIpAddress() << " ";
+            // cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << "\tExposure start ts: " << ptrGrabResult->GetTimeStamp() / 1000000 << " " << ptrGrabResult->GetNumberOfSkippedImages() << endl;
+            // if (ptrGrabResult->ChunkTimestamp.IsReadable())
+            //     cout << "OnImageGrabbed: TimeStamp (Result) : " << ptrGrabResult->ChunkTimestamp.GetValue() << endl;
+            // if (ptrGrabResult->ChunkExposureTime.IsReadable())
+            //     cout << "OnImageGrabbed: ExposureTime (Result) : " << ptrGrabResult->ChunkExposureTime.GetValue() << endl;
+            // if (ptrGrabResult->ChunkFramecounter.IsReadable()) // frame start /  at 0
+            //     cout << "OnImageGrabbed: Framecouter (Result) : " << ptrGrabResult->ChunkFramecounter.GetValue() << endl;
+            // if (ptrGrabResult->ChunkTriggerinputcounter.IsReadable())
+            //     cout << "OnImageGrabbed: Triggerinputcounter (Result) : " << ptrGrabResult->ChunkTriggerinputcounter.GetValue() << endl;
         }
+    }
+    CSampleImageEventHandler() {}
+
+    CSampleImageEventHandler(string ip)
+    {
+        fs.open((std::string(std::string("../" + ip + "/") + "exstart_time.txt")).c_str(), std::ios::out);
+    }
+    ~CSampleImageEventHandler()
+    {
     }
 };
 
@@ -116,6 +139,10 @@ public:
     uint64_t time_differ; // us
     string cam_ip;
     bool event_on;
+
+    CSampleCameraEventHandler* pHandler1;
+    CSampleImageEventHandler *pHandler2;
+
 
     MyCamera();
     void Init(string camip);

@@ -128,8 +128,6 @@ void aurora_stop()
 
 unsigned __stdcall a_get_frame(LPVOID)
 {
-    std::cout << ::GetCurrentThreadId() << std::endl;
-
     std::ofstream fs("../mag_timestamp.txt", std::ios::out);
     std::ofstream fd("../mag_data.txt", std::ios::out);
     std::ofstream fn("../mag_num.txt", std::ios::out);
@@ -174,15 +172,6 @@ unsigned __stdcall a_get_frame(LPVOID)
 
     auto t2 = std::chrono::system_clock::now();
 
-    // save
-    // for (auto t : mag_Time)
-	// 	fs << t << "\n";
-	// for (auto t : mag_Data)
-	// 	fd << t[0] << " " << t[1] << " " << t[2] << " " << t[3] << " " << t[4] << " " << t[5] << " " << t[6] << " " << t[7] << "\n";
-	// for (auto t : frame_Number)
-	// 	fn << t << "\n";
-    // auto t3 = std::chrono::steady_clock::now();
-
     std::cout << "mag_frame_cout " << frame_count << "\t";
     std::cout << "times :" << t1.time_since_epoch().count() << "~";
     std::cout << t2.time_since_epoch().count() << std::endl;
@@ -192,7 +181,6 @@ unsigned __stdcall a_get_frame(LPVOID)
     fn.close();
     fd.close();
 
-    //fprintf(logg, "frame_count :%d ; use time :%lf\n", frame_count, dr_ms);
     _endthreadex(0);
     return 0;
 

@@ -247,7 +247,6 @@ int certus_error_exit()
 
 unsigned __stdcall c_get_frame(LPVOID)
 {
-    std::cout << ::GetCurrentThreadId() << std::endl;
 
 
     /*
@@ -319,13 +318,6 @@ unsigned __stdcall c_get_frame(LPVOID)
 
     auto t2 = std::chrono::system_clock::now();
 
-	// save
-	// for (auto t : opt_Time)
-	// 	fs << t << "\n";
-	// for (auto t : opt_Data)
-	// 	fd << t[0] << " " << t[1] << " " << t[2] << "\n";
-	// for (auto t : frame_Number)
-	// 	fn << t << "\n";
 
     std::cout << "opt_frame_cout " << ndata << "\t";
     std::cout << "times :" << t1.time_since_epoch().count() << "~";

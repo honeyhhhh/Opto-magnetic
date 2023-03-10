@@ -11,7 +11,7 @@
 #include "serial.hpp"
 
 
-#define THREAD_NUM 6
+#define THREAD_NUM 4
 #define CAM_NUM 4
 
 SYSTEM_INFO info;
@@ -23,8 +23,8 @@ HANDLE hTimerQueue = NULL;
 HANDLE gDoneEvent;
 
 // 需要同步的线程函数
-_beginthreadex_proc_type functions[] = {a_get_frame, c_get_frame ,cam_get_frame1, cam_get_frame1, cam_get_frame1, cam_get_frame1};
-// _beginthreadex_proc_type functions[] = {cam_get_frame1, cam_get_frame1, cam_get_frame1, cam_get_frame1};
+// _beginthreadex_proc_type functions[] = {a_get_frame, c_get_frame ,cam_get_frame1, cam_get_frame1, cam_get_frame1, cam_get_frame1};
+_beginthreadex_proc_type functions[] = {cam_get_frame1, cam_get_frame1, cam_get_frame1, cam_get_frame1};
 
 // 线程标识符
 HANDLE hThread[THREAD_NUM];
@@ -112,8 +112,8 @@ int main()
         cam[i].Init(CamIps[i]);
     }
     // 参数列表
-    MyCamera *params[] = {nullptr, nullptr, &cam[1], &cam[2], &cam[3], &cam[0]};
-    // MyCamera *params[] = {&cam[1], &cam[2], &cam[3], &cam[0]};
+    // MyCamera *params[] = {nullptr, nullptr, &cam[1], &cam[2], &cam[3], &cam[0]};
+    MyCamera *params[] = {&cam[1], &cam[2], &cam[3], &cam[0]};
 
     
 
