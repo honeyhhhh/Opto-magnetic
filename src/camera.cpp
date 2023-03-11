@@ -1,6 +1,8 @@
 #include "camera.hpp"
 #include "serial.hpp"
-
+#include "bmp.hpp"
+#include "threadpool.h"
+#include <memory>
 
 
 MyCamera::MyCamera()
@@ -11,7 +13,7 @@ MyCamera::MyCamera()
 void MyCamera::Init(string camip)
 {
     cam_ip = camip;
-    event_on = true;
+    event_on = false;
 
     auto t0 = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
     cout << "init camera :" << cam_ip << " at " << t0 << endl; // cameras ticks same ? set min?
@@ -23,7 +25,7 @@ void MyCamera::Init(string camip)
     camera.Attach(TlFactory.CreateDevice(di));
     pHandler1 = new CSampleCameraEventHandler(camip);
     pHandler2 = new CSampleImageEventHandler(camip);
-    camera.GrabCameraEvents = true;
+    // camera.GrabCameraEvents = true;
 
     camera.Open();
 
@@ -151,8 +153,13 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
 
     int nbuff = 0;
     size_t bufferSize = 1024 * 1280;
+    int width = 1280;
+    int height = 1024;
+
+    std::threadpool executor {16};
 
     CBaslerUniversalGrabResultPtr ptrGrabResult;
+    
     std::vector<uint64_t> cam_Time(500);
     std::vector<unsigned long> frame_Number(500);
     std::vector<std::vector<uint8_t> > cam_Data (200, std::vector<uint8_t>(bufferSize));
@@ -171,7 +178,7 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
     camera->time_differ = tt3 - tt;
     cout << camera->time_differ << endl;
 
-    camera->camera.StartGrabbing(GrabStrategy_UpcomingImage);//GrabStrategy_UpcomingImage
+    camera->camera.StartGrabbing(10, GrabStrategy_UpcomingImage);//GrabStrategy_UpcomingImage
     Sleep(50);
 
     // 进入屏障 sync grab
@@ -186,20 +193,22 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
 
     while (camera->camera.IsGrabbing())
     {
-        // auto t5 = std::chrono::system_clock::now().time_since_epoch().count();
-        // cout << "camera : " << camera.GetDeviceInfo().GetIpAddress() << " ";
-        // cout << "ImageNumber: " << ptrGrabResult->GetImageNumber() << "\tExposure start ts: " << Time_convert(ptrGrabResult->GetTimeStamp()) + 50 << " " << t5/10000 << " " << ptrGrabResult->GetNumberOfSkippedImages() << endl;
         camera->camera.RetrieveResult( 10000, ptrGrabResult, TimeoutHandling_Return );
         if (ptrGrabResult->GrabSucceeded())
         {
             uint64_t f = camera->Time_convert(ptrGrabResult->GetTimeStamp()); //exposure start
+            uint64_t fn = ptrGrabResult->GetImageNumber();
+            uint64_t img_size = ptrGrabResult->GetImageSize();
+            uint64_t nskip = ptrGrabResult->GetNumberOfSkippedImages();
             auto ff = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
-            fs << f << " " << ff << "\n";
+            fs << f << " " << ff << " " << nskip << "\n";
             const uint8_t* pImageBuffer = (uint8_t*) ptrGrabResult->GetBuffer();
-            std::vector<uint8_t> t(pImageBuffer, pImageBuffer + bufferSize);
 
-            // cam_Time.push_back(f);
-            // cam_Data.push_back(t);
+
+            std::unique_ptr<uint8_t[]> p = std::make_unique<uint8_t[]>(img_size);
+            std::copy(pImageBuffer, pImageBuffer + img_size, p.get());
+            
+            executor.commit(SaveVectorAsBmp, std::move(p), width, height, 1, std::string(std::string("../" + camera->cam_ip + "/") + to_string(fn) + ".bmp"));
         }
 
 		if (WaitForSingleObject(gDoneEvent, 0) == WAIT_OBJECT_0)
