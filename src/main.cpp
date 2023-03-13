@@ -55,13 +55,13 @@ int main()
     PylonInitialize();
 
     // 设置主线程优先级
-    // if(!::SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS))
-    // {
-    //     cout << "Error 0" << endl;
-    //     return 1;
-    // }
+    if(!::SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS))
+    {
+        cout << "Error 0" << endl;
+        return 1;
+    }
     ::SetThreadAffinityMask(::GetCurrentThread(), 0x01);
-    ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
+    ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
     // 初始化屏障
     ::InitializeSynchronizationBarrier(&sb, THREAD_NUM + 1, -1);
@@ -118,20 +118,20 @@ int main()
     
 
     std::cout << "set thread" << std::endl;
-    uint8_t mask =  1;
+    uint8_t mask [] = {1 << 0, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 4};
     int i = 0;
     for (auto f : functions) 
     {
         hThread[i] = (HANDLE)_beginthreadex(NULL, 0, f, params[i], CREATE_SUSPENDED, &threadID[i]); // 设置挂起
         
-        // 设置 绑定核心、线程优先级
-        if(!::SetThreadAffinityMask(hThread[i], mask << i))
-        {
-            cout << "Error 1" << endl;
-            return 1;
-        }
+        // // 设置 绑定核心、线程优先级
+        // if(!::SetThreadAffinityMask(hThread[i], mask[i]))
+        // {
+        //     cout << "Error 1" << endl;
+        //     return 1;
+        // }
 
-        if(!::SetThreadPriority(hThread[i], THREAD_PRIORITY_ABOVE_NORMAL))
+        if(!::SetThreadPriority(hThread[i], THREAD_PRIORITY_NORMAL))
         {
             cout << "Error 2" << endl;
             return 1;
@@ -155,7 +155,7 @@ int main()
     send_code("COM9", 4);
     send_code("COM9", 3);
 
-    std::cout << "start timer at " << std::chrono::system_clock::now().time_since_epoch().count() / 10000 << std::endl;
+    std::cout << "start timer at " << std::chrono::system_clock::now().time_since_epoch().count() / 5000 << std::endl;
     // Set a timer to call the timer routine in 10 seconds.
     if (!::CreateTimerQueueTimer( &hTimer, hTimerQueue, (WAITORTIMERCALLBACK)TimerRoutine, NULL , 5000, 0, 0))
     {

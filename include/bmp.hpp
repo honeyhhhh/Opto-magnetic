@@ -71,7 +71,6 @@ std::vector<std::vector<rgb_color>> convert_to_rgb(const std::vector<std::vector
 
 
 
-void SaveVectorAsBmp(std::unique_ptr<uint8_t[]> p, int width, int heigth, int channels,  const std::string& filename)
 
 
 #endif	// _BMP_H

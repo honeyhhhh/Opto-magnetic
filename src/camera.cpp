@@ -1,8 +1,142 @@
 #include "camera.hpp"
 #include "serial.hpp"
 #include "bmp.hpp"
-#include "threadpool.h"
 #include <memory>
+#include "threadpool.h"
+
+class A 
+{
+public:
+    static int Afun(int n = 0)
+    {
+        std::cout << n << std::endl;
+        return 0;
+    }
+
+    static void SaveVectorAsBmpxx(std::string filename)
+    {
+
+    }
+
+
+    static void SaveVectorAsBmpx(std::string filename, std::unique_ptr<uint8_t []> p)
+    {
+        std::cout << filename << std::endl;
+    }
+
+    static void SaveVectorAsBmpxxx(int width, int heigth, std::string filename, uint8_t *pp)
+    {
+        auto imgbuffer = pp;
+        int channels = 1;
+        std::ofstream out(filename, std::ios::binary);
+
+        bmp_file_header file_head;
+        bmp_info_header info_head;
+
+        uint8_t *ft = reinterpret_cast<uint8_t *>(&file_head.file_type);
+        ft[0] = 'B';
+        ft[1] = 'M';
+        file_head.reserved1 = 0;
+        file_head.reserved2 = 0;
+        file_head.file_size = 14 + 40 + 1024 + width * heigth * channels;
+        file_head.offset_data = 54;
+
+        out.write((char *)(&file_head), sizeof(file_head));
+
+
+        info_head.size = 40;
+        info_head.width = width;  // cols列1280
+        info_head.height = heigth; // rows行1024
+        info_head.bit_count = 8 * channels;
+        info_head.planes = 1;
+        info_head.compression = 0;
+        info_head.size_image = width * heigth * channels;
+        info_head.x_pixels_per_meter = 2835;
+        info_head.y_pixels_per_meter = 2835;
+        info_head.colors_used = 0;
+        info_head.colors_important = 0;
+
+        out.write((char *)(&info_head), sizeof(info_head));
+        auto t1 = std::chrono::steady_clock::now();
+
+        
+        if (channels == 1)
+        {
+            #pragma loop(hint_parallel(12))
+            for (int i = heigth - 1; i >= 0; i--)
+            {
+                // for (int j = 0; j < width; j++)
+                
+                out.write(reinterpret_cast<char *>(&imgbuffer[i * width]), sizeof(uint8_t) * heigth);
+                
+            }
+        }
+        auto t2 = std::chrono::steady_clock::now();
+        auto t3 = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
+
+        out.close();
+        delete [] imgbuffer;
+        double dr_ms = std::chrono::duration<double,std::milli>(t2-t1).count();
+        std::cout << filename << " use time: " << dr_ms  << "  " << t3 << "\n";
+
+    }
+
+    static void SaveVectorAsBmp(int width, int heigth, int channels,  std::string filename, std::unique_ptr<uint8_t []> p)
+    {
+        auto imgbuffer = p.get();
+
+        std::ofstream out(filename, std::ios::binary);
+
+        bmp_file_header file_head;
+        bmp_info_header info_head;
+
+        uint8_t *ft = reinterpret_cast<uint8_t *>(&file_head.file_type);
+        ft[0] = 'B';
+        ft[1] = 'M';
+        file_head.reserved1 = 0;
+        file_head.reserved2 = 0;
+        file_head.file_size = 14 + 40 + 1024 + width * heigth * channels;
+        file_head.offset_data = 54;
+
+        out.write((char *)(&file_head), sizeof(file_head));
+
+
+        info_head.size = 40;
+        info_head.width = width;  // cols列1280
+        info_head.height = heigth; // rows行1024
+        info_head.bit_count = 8 * channels;
+        info_head.planes = 1;
+        info_head.compression = 0;
+        info_head.size_image = width * heigth * channels;
+        info_head.x_pixels_per_meter = 2835;
+        info_head.y_pixels_per_meter = 2835;
+        info_head.colors_used = 0;
+        info_head.colors_important = 0;
+
+        out.write((char *)(&info_head), sizeof(info_head));
+        // auto t1 = std::chrono::steady_clock::now();
+
+        
+        if (channels == 1)
+        {
+            #pragma loop(hint_parallel(12))
+            for (int i = heigth - 1; i >= 0; i--)
+            {
+                // for (int j = 0; j < width; j++)
+                
+                out.write(reinterpret_cast<char *>(&imgbuffer[i * width]), sizeof(uint8_t) * heigth);
+                
+            }
+        }
+        // auto t2 = std::chrono::steady_clock::now();
+
+        out.close();
+        // double dr_ms = std::chrono::duration<double,std::milli>(t2-t1).count();
+        // std::cout << "use time: " << dr_ms << std::endl;
+
+    }
+};
+
 
 
 MyCamera::MyCamera()
@@ -150,13 +284,16 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
     MyCamera *camera = (MyCamera *)c;
     std::ofstream fs((std::string(std::string("../" + camera->cam_ip + "/") + "time.txt")).c_str(), std::ios::out);
     std::ofstream fn((std::string(std::string("../" + camera->cam_ip + "/") + "num.txt")).c_str(), std::ios::out);
+    // std::ofstream fsavetime((std::string(std::string("../" + camera->cam_ip + "/") + "savetime.txt")).c_str(), std::ios::out);
 
     int nbuff = 0;
     size_t bufferSize = 1024 * 1280;
     int width = 1280;
     int height = 1024;
 
-    std::threadpool executor {16};
+    ThreadPool pool(16);
+    pool.init();
+    A a;
 
     CBaslerUniversalGrabResultPtr ptrGrabResult;
     
@@ -178,7 +315,7 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
     camera->time_differ = tt3 - tt;
     cout << camera->time_differ << endl;
 
-    camera->camera.StartGrabbing(10, GrabStrategy_UpcomingImage);//GrabStrategy_UpcomingImage
+    camera->camera.StartGrabbing(GrabStrategy_UpcomingImage);//GrabStrategy_UpcomingImage
     Sleep(50);
 
     // 进入屏障 sync grab
@@ -196,19 +333,29 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
         camera->camera.RetrieveResult( 10000, ptrGrabResult, TimeoutHandling_Return );
         if (ptrGrabResult->GrabSucceeded())
         {
+
             uint64_t f = camera->Time_convert(ptrGrabResult->GetTimeStamp()); //exposure start
             uint64_t fn = ptrGrabResult->GetImageNumber();
             uint64_t img_size = ptrGrabResult->GetImageSize();
             uint64_t nskip = ptrGrabResult->GetNumberOfSkippedImages();
             auto ff = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
-            fs << f << " " << ff << " " << nskip << "\n";
+            fs << f << " " << ff << " " << nskip << " "  << fn << "\n";
             const uint8_t* pImageBuffer = (uint8_t*) ptrGrabResult->GetBuffer();
+            string filename = std::string(std::string("../" + camera->cam_ip + "/") + to_string(fn) + ".bmp");
 
+            // std::unique_ptr<uint8_t []> p = std::make_unique<uint8_t []>(img_size);
+            // std::copy(pImageBuffer, pImageBuffer + img_size, p.get());
 
-            std::unique_ptr<uint8_t[]> p = std::make_unique<uint8_t[]>(img_size);
-            std::copy(pImageBuffer, pImageBuffer + img_size, p.get());
-            
-            executor.commit(SaveVectorAsBmp, std::move(p), width, height, 1, std::string(std::string("../" + camera->cam_ip + "/") + to_string(fn) + ".bmp"));
+            uint8_t *p = new uint8_t[img_size];
+            std::copy(pImageBuffer, pImageBuffer + img_size, p);
+
+            // pool.submit(A::SaveVectorAsBmpxxx, width, height, filename, p);
+            A::SaveVectorAsBmpxxx(width, height, filename, p);
+
+            // pool.submit([&width, &height, &filename, p] {
+            //     A::SaveVectorAsBmpxxx(width, height, 1, filename, p);
+            // });
+
         }
 
 		if (WaitForSingleObject(gDoneEvent, 0) == WAIT_OBJECT_0)
@@ -236,6 +383,8 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
     std::cout << "ip " << camera->cam_ip << "\t";
     std::cout << "times :" << t1.time_since_epoch().count() << "~";
     std::cout << t2.time_since_epoch().count() << std::endl;
+
+    Sleep(10000);
 
     fs.close();
     fn.close();
