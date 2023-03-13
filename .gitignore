@@ -5,9 +5,8 @@ build/*
 ndlib/samples/*
 ndlib/build/*
 ndicapi/combinedAPI/*
-169*
+*.bmp
 .DS_Store
-log*
 mag*
 opt*
 CSerialPort

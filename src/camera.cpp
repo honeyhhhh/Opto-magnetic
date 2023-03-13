@@ -32,6 +32,8 @@ public:
 
         bmp_file_header file_head;
         bmp_info_header info_head;
+        RGBQUAD *pColorTable = new RGBQUAD[256];
+
 
         uint8_t *ft = reinterpret_cast<uint8_t *>(&file_head.file_type);
         ft[0] = 'B';
@@ -62,6 +64,8 @@ public:
         
         if (channels == 1)
         {
+            out.write((char *)pColorTable, sizeof(RGBQUAD) * 256);
+
             #pragma loop(hint_parallel(12))
             for (int i = heigth - 1; i >= 0; i--)
             {
@@ -75,9 +79,10 @@ public:
         auto t3 = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
 
         out.close();
-        delete [] imgbuffer;
         double dr_ms = std::chrono::duration<double,std::milli>(t2-t1).count();
         std::cout << filename << " use time: " << dr_ms  << "  " << t3 << "\n";
+        delete [] pColorTable;
+        delete [] imgbuffer;
 
     }
 
@@ -89,6 +94,7 @@ public:
 
         bmp_file_header file_head;
         bmp_info_header info_head;
+        RGBQUAD *pColorTable = new RGBQUAD[256];
 
         uint8_t *ft = reinterpret_cast<uint8_t *>(&file_head.file_type);
         ft[0] = 'B';
@@ -119,6 +125,8 @@ public:
         
         if (channels == 1)
         {
+            out.write((char *)pColorTable, sizeof(RGBQUAD) * 256);
+
             #pragma loop(hint_parallel(12))
             for (int i = heigth - 1; i >= 0; i--)
             {
@@ -129,7 +137,7 @@ public:
             }
         }
         // auto t2 = std::chrono::steady_clock::now();
-
+        delete [] pColorTable;
         out.close();
         // double dr_ms = std::chrono::duration<double,std::milli>(t2-t1).count();
         // std::cout << "use time: " << dr_ms << std::endl;
@@ -294,6 +302,7 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
     ThreadPool pool(16);
     pool.init();
     A a;
+    Sleep(100);
 
     CBaslerUniversalGrabResultPtr ptrGrabResult;
     
@@ -349,8 +358,8 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
             uint8_t *p = new uint8_t[img_size];
             std::copy(pImageBuffer, pImageBuffer + img_size, p);
 
-            // pool.submit(A::SaveVectorAsBmpxxx, width, height, filename, p);
-            A::SaveVectorAsBmpxxx(width, height, filename, p);
+            pool.submit(A::SaveVectorAsBmpxxx, width, height, filename, p);
+            // A::SaveVectorAsBmpxxx(width, height, filename, p);
 
             // pool.submit([&width, &height, &filename, p] {
             //     A::SaveVectorAsBmpxxx(width, height, 1, filename, p);

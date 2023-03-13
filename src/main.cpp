@@ -11,7 +11,7 @@
 #include "serial.hpp"
 
 
-#define THREAD_NUM 4
+#define THREAD_NUM 6
 #define CAM_NUM 4
 
 SYSTEM_INFO info;
@@ -23,8 +23,8 @@ HANDLE hTimerQueue = NULL;
 HANDLE gDoneEvent;
 
 // 需要同步的线程函数
-// _beginthreadex_proc_type functions[] = {a_get_frame, c_get_frame ,cam_get_frame1, cam_get_frame1, cam_get_frame1, cam_get_frame1};
-_beginthreadex_proc_type functions[] = {cam_get_frame1, cam_get_frame1, cam_get_frame1, cam_get_frame1};
+_beginthreadex_proc_type functions[] = {a_get_frame, c_get_frame ,cam_get_frame1, cam_get_frame1, cam_get_frame1, cam_get_frame1};
+// _beginthreadex_proc_type functions[] = {cam_get_frame1, cam_get_frame1, cam_get_frame1, cam_get_frame1};
 
 // 线程标识符
 HANDLE hThread[THREAD_NUM];
@@ -112,13 +112,13 @@ int main()
         cam[i].Init(CamIps[i]);
     }
     // 参数列表
-    // MyCamera *params[] = {nullptr, nullptr, &cam[1], &cam[2], &cam[3], &cam[0]};
-    MyCamera *params[] = {&cam[1], &cam[2], &cam[3], &cam[0]};
+    MyCamera *params[] = {nullptr, nullptr, &cam[1], &cam[2], &cam[3], &cam[0]};
+    // MyCamera *params[] = {&cam[1], &cam[2], &cam[3], &cam[0]};
 
     
 
     std::cout << "set thread" << std::endl;
-    uint8_t mask [] = {1 << 0, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 4};
+    uint8_t mask [] = {1 << 0, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5};
     int i = 0;
     for (auto f : functions) 
     {
@@ -157,7 +157,7 @@ int main()
 
     std::cout << "start timer at " << std::chrono::system_clock::now().time_since_epoch().count() / 5000 << std::endl;
     // Set a timer to call the timer routine in 10 seconds.
-    if (!::CreateTimerQueueTimer( &hTimer, hTimerQueue, (WAITORTIMERCALLBACK)TimerRoutine, NULL , 5000, 0, 0))
+    if (!::CreateTimerQueueTimer( &hTimer, hTimerQueue, (WAITORTIMERCALLBACK)TimerRoutine, NULL , 10000, 0, 0))
     {
         printf("CreateTimerQueueTimer failed (%d)\n", GetLastError());
         return 1;
