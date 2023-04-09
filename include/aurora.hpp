@@ -25,6 +25,6 @@ extern const char* reply;
 unsigned __stdcall a_get_frame(LPVOID);
 int aurora_init();
 void aurora_stop();
-
+void a_get_frame2();
 
 #endif	// _AURORA_H

@@ -4,6 +4,8 @@
 #include <memory>
 #include "threadpool.h"
 
+
+
 class A 
 {
 public:
@@ -33,15 +35,21 @@ public:
         bmp_file_header file_head;
         bmp_info_header info_head;
         RGBQUAD *pColorTable = new RGBQUAD[256];
-
+        for (int i = 0; i < 256; i++)
+        {
+            pColorTable[i].rgbBlue = i;
+            pColorTable[i].rgbGreen = i;
+            pColorTable[i].rgbRed = i;
+            pColorTable[i].rgbReserved = 0;
+        }
 
         uint8_t *ft = reinterpret_cast<uint8_t *>(&file_head.file_type);
         ft[0] = 'B';
         ft[1] = 'M';
         file_head.reserved1 = 0;
         file_head.reserved2 = 0;
-        file_head.file_size = 14 + 40 + 1024 + width * heigth * channels;
-        file_head.offset_data = 54;
+        file_head.file_size = 14 + 40 + 1024  + width * heigth * channels;
+        file_head.offset_data = 54 + 1024;
 
         out.write((char *)(&file_head), sizeof(file_head));
 
@@ -53,25 +61,25 @@ public:
         info_head.planes = 1;
         info_head.compression = 0;
         info_head.size_image = width * heigth * channels;
-        info_head.x_pixels_per_meter = 2835;
-        info_head.y_pixels_per_meter = 2835;
-        info_head.colors_used = 0;
-        info_head.colors_important = 0;
+        info_head.x_pixels_per_meter = 3780;
+        info_head.y_pixels_per_meter = 3780;
+        info_head.colors_used = 256;
+        info_head.colors_important = 256;
 
         out.write((char *)(&info_head), sizeof(info_head));
         auto t1 = std::chrono::steady_clock::now();
+        out.write((char *)pColorTable, sizeof(RGBQUAD) * 256);
 
         
         if (channels == 1)
         {
-            out.write((char *)pColorTable, sizeof(RGBQUAD) * 256);
 
             #pragma loop(hint_parallel(12))
             for (int i = heigth - 1; i >= 0; i--)
             {
                 // for (int j = 0; j < width; j++)
                 
-                out.write(reinterpret_cast<char *>(&imgbuffer[i * width]), sizeof(uint8_t) * heigth);
+                out.write(reinterpret_cast<char *>(&imgbuffer[i * width]), sizeof(uint8_t) * width);
                 
             }
         }
@@ -116,17 +124,16 @@ public:
         info_head.size_image = width * heigth * channels;
         info_head.x_pixels_per_meter = 2835;
         info_head.y_pixels_per_meter = 2835;
-        info_head.colors_used = 0;
+        info_head.colors_used = 8;
         info_head.colors_important = 0;
 
         out.write((char *)(&info_head), sizeof(info_head));
         // auto t1 = std::chrono::steady_clock::now();
+        out.write((char *)pColorTable, sizeof(RGBQUAD) * 256);
 
         
         if (channels == 1)
         {
-            out.write((char *)pColorTable, sizeof(RGBQUAD) * 256);
-
             #pragma loop(hint_parallel(12))
             for (int i = heigth - 1; i >= 0; i--)
             {
@@ -137,10 +144,10 @@ public:
             }
         }
         // auto t2 = std::chrono::steady_clock::now();
-        delete [] pColorTable;
         out.close();
         // double dr_ms = std::chrono::duration<double,std::milli>(t2-t1).count();
         // std::cout << "use time: " << dr_ms << std::endl;
+        delete [] pColorTable;
 
     }
 };
@@ -156,6 +163,7 @@ void MyCamera::Init(string camip)
 {
     cam_ip = camip;
     event_on = false;
+    static_count = 0;
 
     auto t0 = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
     cout << "init camera :" << cam_ip << " at " << t0 << endl; // cameras ticks same ? set min?
@@ -185,6 +193,8 @@ void MyCamera::Init(string camip)
     camera.TriggerSelector.SetValue(TriggerSelector_FrameStart);
     camera.TriggerMode.SetValue(TriggerMode_On);
     camera.TriggerSource.SetValue(TriggerSource_Line1);
+    // camera.TriggerMode.SetValue(TriggerMode_Off);
+
 
     if (event_on)
     {
@@ -290,8 +300,8 @@ uint64_t MyCamera::Time_convert(uint64_t inter_ticks)
 unsigned __stdcall cam_get_frame1(LPVOID c)
 {
     MyCamera *camera = (MyCamera *)c;
-    std::ofstream fs((std::string(std::string("../" + camera->cam_ip + "/") + "time.txt")).c_str(), std::ios::out);
-    std::ofstream fn((std::string(std::string("../" + camera->cam_ip + "/") + "num.txt")).c_str(), std::ios::out);
+    std::ofstream fs((std::string(std::string("../dataset/" + camera->cam_ip + "/") + "time.txt")).c_str(), std::ios::out);
+    std::ofstream fn((std::string(std::string("../dataset/" + camera->cam_ip + "/") + "num.txt")).c_str(), std::ios::out);
     // std::ofstream fsavetime((std::string(std::string("../" + camera->cam_ip + "/") + "savetime.txt")).c_str(), std::ios::out);
 
     int nbuff = 0;
@@ -350,7 +360,7 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
             auto ff = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
             fs << f << " " << ff << " " << nskip << " "  << fn << "\n";
             const uint8_t* pImageBuffer = (uint8_t*) ptrGrabResult->GetBuffer();
-            string filename = std::string(std::string("../" + camera->cam_ip + "/") + to_string(fn) + ".bmp");
+            string filename = std::string(std::string("../dataset/" + camera->cam_ip + "/") + to_string(fn) + ".bmp");
 
             // std::unique_ptr<uint8_t []> p = std::make_unique<uint8_t []>(img_size);
             // std::copy(pImageBuffer, pImageBuffer + img_size, p.get());
@@ -406,6 +416,52 @@ unsigned __stdcall cam_get_frame1(LPVOID c)
 }
 
 
+void cam_get_frame2(MyCamera *camera)
+{
+    CBaslerUniversalGrabResultPtr ptrGrabResult;
+
+    // CAcquireContinuousConfiguration().OnOpened(camera->camera);
+    std::ofstream fs((std::string(std::string("../static_data/" + camera->cam_ip + "/") + "time.txt")).c_str(), std::ios::out | std::ios::app);
+    camera->camera.GevTimestampControlReset();
+    Sleep(50);
+    auto tt1 = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
+    camera->camera.GevTimestampControlLatch.Execute();
+    auto tt2 = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
+    auto tt = camera->camera.GevTimestampValue.GetValue() / 1000000;
+    auto tt3 = (tt1 + tt2) / 2; 
+    camera->time_differ = tt3 - tt;
+
+
+    camera->camera.StartGrabbing( GrabStrategy_UpcomingImage );
+    Sleep(50);
+
+
+    camera->camera.RetrieveResult( 5000, ptrGrabResult, TimeoutHandling_ThrowException );
+    if (ptrGrabResult->GrabSucceeded())
+    {
+        uint64_t f = camera->Time_convert(ptrGrabResult->GetTimeStamp()); //exposure start
+        auto ff = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
+        fs << f << " " << ff << " " << "\n";
+        string filename = std::string("../static_data/" + camera->cam_ip + "/") + to_string(camera->static_count) + ".bmp";
+        string filename2 = std::string("../static_data/" + camera->cam_ip + "/") + to_string(camera->static_count+100) + ".bmp";
+
+        const uint8_t* pImageBuffer = (uint8_t*) ptrGrabResult->GetBuffer();
+        uint8_t *p = new uint8_t[1280*1024];
+        std::copy(pImageBuffer, pImageBuffer + 1280*1024, p);
+
+        A::SaveVectorAsBmpxxx(1280, 1024, filename, p);
+
+        // CImagePersistence::Save(ImageFileFormat_Bmp, 
+        //                         String_t((std::string(std::string("../static_data/" + camera->cam_ip + "/") + to_string(camera->static_count) + ".bmp")).c_str()),
+        //                         ptrGrabResult);
+        camera->static_count++;
+    }
+    //Stop the grabbing.
+    camera->camera.StopGrabbing();
+    fs.close();
+    std::cout << camera->cam_ip << ":" << camera->static_count << std::endl;
+
+}
 
 
 

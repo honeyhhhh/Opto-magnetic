@@ -128,9 +128,9 @@ void aurora_stop()
 
 unsigned __stdcall a_get_frame(LPVOID)
 {
-    std::ofstream fs("../mag_timestamp.txt", std::ios::out);
-    std::ofstream fd("../mag_data.txt", std::ios::out);
-    std::ofstream fn("../mag_num.txt", std::ios::out);
+    std::ofstream fs("../dataset/mag_timestamp.txt", std::ios::out);
+    std::ofstream fd("../dataset/mag_data.txt", std::ios::out);
+    std::ofstream fn("../dataset/mag_num.txt", std::ios::out);
 
 
     std::vector<uint64_t> mag_Time(500);
@@ -183,5 +183,34 @@ unsigned __stdcall a_get_frame(LPVOID)
 
     _endthreadex(0);
     return 0;
+
+}
+
+void a_get_frame2()
+{
+    std::ofstream fs("../static_data/mag_timestamp.txt", std::ios::out | std::ios::app);
+    std::ofstream fd("../static_data/mag_data.txt", std::ios::out | std::ios::app);
+    std::ofstream fn("../static_data/mag_num.txt", std::ios::out | std::ios::app);
+
+
+    double trans[8];
+
+    auto t = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
+    const char* re = ndiTX(device, 0x0801);
+    unsigned long frame_number =  ndiGetTXFrame(device, 10);
+    int tfStatus = ndiGetTXTransform(device, 10, trans);
+
+    fs << t << "\n";
+	fd << trans[0] << " " << trans[1] << " " << trans[2] << " " << trans[3] << " " << trans[4] << " " << trans[5] << " " << trans[6] << " " << trans[7] << "\n";
+    fn << frame_number << "\n";
+
+    
+
+    std::cout << "mag_frame " << "\n";
+    
+    fs.close();
+    fn.close();
+    fd.close();
+
 
 }

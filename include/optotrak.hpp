@@ -36,12 +36,15 @@ extern char szProperty[32];
 
 
 int certus_init();
+int certus_init4();
+
 unsigned __stdcall c_get_frame(LPVOID);
 void certus_stop();
 int certus_error_exit();
 
+void c_get_frame2();
 
-
+void c_get_frame4();
 
 
 

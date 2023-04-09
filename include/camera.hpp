@@ -139,6 +139,7 @@ public:
     uint64_t time_differ; // us
     string cam_ip;
     bool event_on;
+    int static_count;
 
     CSampleCameraEventHandler* pHandler1;
     CSampleImageEventHandler *pHandler2;
@@ -153,7 +154,7 @@ public:
 };
 
 unsigned __stdcall cam_get_frame1(LPVOID c);
-
+void cam_get_frame2(MyCamera *camera);
 
 
 

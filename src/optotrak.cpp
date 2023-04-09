@@ -263,9 +263,9 @@ unsigned __stdcall c_get_frame(LPVOID)
 
 	p3dData = (Position3d* )malloc( (dtSettings.nMarkers - 1) * sizeof(Position3d) );
 
-    std::ofstream fs("../opt_timestamp.txt", std::ios::out);
-    std::ofstream fd("../opt_data.txt", std::ios::out);
-    std::ofstream fn("../opt_num.txt", std::ios::out);
+    std::ofstream fs("../dataset/opt_timestamp.txt", std::ios::out);
+    std::ofstream fd("../dataset/opt_data.txt", std::ios::out);
+    std::ofstream fn("../dataset/opt_num.txt", std::ios::out);
 
     std::vector<uint64_t> opt_Time(2500);
     std::vector<std::vector<double> > opt_Data (2500, std::vector<double>(3));
@@ -331,4 +331,241 @@ unsigned __stdcall c_get_frame(LPVOID)
 	return 0;
 
 
+}
+
+
+void c_get_frame2()
+{
+    /*
+     * Get frame of 3D data.
+     */
+    unsigned int uFlags;
+    unsigned int uElements;
+    unsigned int uFrameNumber;
+	
+	Position3d *p3dData = NULL;;
+
+	p3dData = (Position3d* )malloc( (dtSettings.nMarkers - 1) * sizeof(Position3d) );
+
+    std::ofstream fs("../static_data/opt_timestamp.txt", std::ios::out | std::ios::app);
+    std::ofstream fd("../static_data/opt_data.txt", std::ios::out | std::ios::app);
+    std::ofstream fn("../static_data/opt_num.txt", std::ios::out | std::ios::app);
+
+    if(DataGetLatest3D(&uFrameNumber, &uElements, &uFlags, p3dData))
+    {
+		;
+    }
+    auto t = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
+
+    for(int nCurMarker = 0; nCurMarker < dtSettings.nMarkers - 1; nCurMarker++)
+    {
+		fs << t << "\n";
+		fd << p3dData[nCurMarker].x << " " << p3dData[nCurMarker].y << " " << p3dData[nCurMarker].z << "\n";
+		fn << uFrameNumber << "\n";
+    }
+
+    std::cout << "opt_frame" << "\n";
+    fs.close();
+    fn.close();
+    fd.close();
+	free(p3dData);
+
+}
+
+
+void c_get_frame4()
+{
+    /*
+     * Get frame of 3D data.
+     */
+    unsigned int uFlags;
+    unsigned int uElements;
+    unsigned int uFrameNumber;
+	
+	Position3d *p3dData = NULL;
+	struct OptotrakRigidStruct *p6dData = NULL;
+	int nTotalRigids = 1;
+
+	p3dData = (Position3d* )malloc( (dtSettings.nMarkers) * sizeof(Position3d) );
+	p6dData = (struct OptotrakRigidStruct*)malloc( nTotalRigids * sizeof( struct OptotrakRigidStruct ) );
+
+    std::ofstream fs("../static_data/opt_timestamp4.txt", std::ios::out | std::ios::app);
+    std::ofstream fd("../static_data/opt_data4.txt", std::ios::out | std::ios::app);
+    std::ofstream fn("../static_data/opt_num4.txt", std::ios::out | std::ios::app);
+
+    if( DataGetLatestTransforms2( &uFrameNumber, &uElements, &uFlags, p6dData, p3dData ) )
+    {
+        ;
+    }
+    auto t = std::chrono::system_clock::now().time_since_epoch().count() / 10000;
+
+
+
+
+    for(int nCurMarker = 0; nCurMarker < dtSettings.nMarkers; nCurMarker++)
+    {
+		fs << t << "\n";
+		fd << nCurMarker << " " << p3dData[nCurMarker].x << " " << p3dData[nCurMarker].y << " " << p3dData[nCurMarker].z << "\n";
+		fn << uFrameNumber << "\n";
+    }
+    for( int nCurRigid = 0; nCurRigid < nTotalRigids; ++nCurRigid )
+    {
+		if( p6dData[nCurRigid].flags & OPTOTRAK_UNDETERMINED_FLAG )
+		{
+			fd << "Missing" << "\n";
+		}
+		else
+		{
+			fd << p6dData[nCurRigid].transformation.euler.translation.x << " " << p6dData[nCurRigid].transformation.euler.translation.y << " " << p6dData[nCurRigid].transformation.euler.translation.z << "\n";
+			// fd << "YPR " << p6dData[nCurRigid].transformation.euler.rotation.yaw << " " << p6dData[nCurRigid].transformation.euler.rotation.pitch << " " << p6dData[nCurRigid].transformation.euler.rotation.roll << "\n";
+			fd << p6dData[nCurRigid].transformation.quaternion.rotation.q0 << " " << p6dData[nCurRigid].transformation.quaternion.rotation.qx <<
+			" " << p6dData[nCurRigid].transformation.quaternion.rotation.qy << " " << p6dData[nCurRigid].transformation.quaternion.rotation.qz << " " << p6dData[nCurRigid].QuaternionError  <<"\n";
+		}
+    } 
+
+
+
+
+    std::cout << "opt_frame" << "\n";
+    fs.close();
+    fn.close();
+    fd.close();
+	free(p3dData);
+	free(p6dData);
+}
+
+
+int certus_init4()
+{
+	DeviceHandleProperty dtProperty;
+	dtSettings.nMarkers = 4;
+	dtSettings.fFrameFrequency = SAMPLE_FRAMEFREQ;
+	dtSettings.fMarkerFrequency = SAMPLE_MARKERFREQ;
+	dtSettings.nThreshold = 30;
+	dtSettings.nMinimumGain = 160;
+	dtSettings.nStreamData = SAMPLE_STREAMDATA;
+	dtSettings.fDutyCycle = SAMPLE_DUTYCYCLE;
+	dtSettings.fVoltage = SAMPLE_VOLTAGE;
+	dtSettings.fCollectionTime = 1.0;
+	dtSettings.fPreTriggerTime = 0.0;
+
+	if( TransputerLoadSystem( "system" ) != OPTO_NO_ERROR_CODE )
+	{
+		return certus_error_exit();
+	}
+
+	sleep(1);
+
+    if( TransputerInitializeSystem( OPTO_LOG_ERRORS_FLAG | OPTO_LOG_MESSAGES_FLAG ) != OPTO_NO_ERROR_CODE )
+	{
+		return certus_error_exit();
+	}
+
+	sleep(5);
+
+	int n;
+	OptotrakGetNumberDeviceHandles(&n);
+
+    if( OptotrakDeviceHandleEnable(1) != OPTO_NO_ERROR_CODE )
+	{
+		return certus_error_exit();	
+	}
+	sleep(1);
+
+    if( OptotrakDeviceHandleEnable(2) != OPTO_NO_ERROR_CODE )
+	{
+		return certus_error_exit();	
+	}
+	sleep(1);
+
+
+	dtProperty.uPropertyID = 2;
+	dtProperty.dtPropertyType = DH_PROPERTY_TYPE_INT;
+	dtProperty.dtData.nData = 0;
+	if( OptotrakDeviceHandleSetProperties( 1, &dtProperty, 1 )!= OPTO_NO_ERROR_CODE )
+	{
+		return certus_error_exit();
+	}
+
+	sleep(1);
+
+	if( RigidBodyAddFromDeviceHandle( 2, 0, 0 ) != OPTO_NO_ERROR_CODE )
+	{
+		return certus_error_exit();
+	} 
+
+
+	sleep(1);
+
+    if( OptotrakSetProcessingFlags( OPTO_LIB_POLL_REAL_DATA |
+                                    OPTO_CONVERT_ON_HOST |
+                                    OPTO_RIGID_ON_HOST ) )
+    {
+		return certus_error_exit();
+	}
+    if( OptotrakLoadCameraParameters( "standard" ) != OPTO_NO_ERROR_CODE )
+	{
+		return certus_error_exit();
+	}
+
+	if( dtSettings.nMarkers == 0 )
+	{
+		return certus_error_exit();
+	}
+
+    if( OptotrakSetupCollection( dtSettings.nMarkers,
+			                     dtSettings.fFrameFrequency,
+				                 dtSettings.fMarkerFrequency,
+					             dtSettings.nThreshold,
+						         dtSettings.nMinimumGain,
+							     dtSettings.nStreamData,
+								 dtSettings.fDutyCycle,
+								 dtSettings.fVoltage,
+								 dtSettings.fCollectionTime,
+								 dtSettings.fPreTriggerTime,
+								 OPTOTRAK_NO_FIRE_MARKERS_FLAG | OPTOTRAK_BUFFER_RAW_FLAG | OPTOTRAK_SWITCH_AND_CONFIG_FLAG ) != OPTO_NO_ERROR_CODE )
+    {
+		return certus_error_exit();
+    }
+
+
+
+    sleep(1);
+    if( OptotrakActivateMarkers( ) != OPTO_NO_ERROR_CODE )
+    {
+        return certus_error_exit();
+    }
+	sleep(1);
+
+
+
+
+
+
+
+
+
+    if( RigidBodyChangeSettings(
+            0,   			/* ID associated with this rigid body. */
+            4,              /* Minimum number of markers which must be seen
+                               before performing rigid body calculations.*/
+            60,             /* Cut off angle for marker inclusion in calcs.*/
+            (float)0.25,    /* Maximum 3-D marker error for this rigid body. */
+            (float)1.0,     /* Maximum raw sensor error for this rigid body. */
+            (float)1.0,     /* Maximum 3-D RMS marker error for this rigid body. */
+            (float)1.0,     /* Maximum raw sensor RMS error for this rigid body. */
+            OPTOTRAK_QUATERN_RIGID_FLAG | OPTOTRAK_RETURN_QUATERN_FLAG ) )
+    {
+        return certus_error_exit();
+    }
+
+
+
+
+
+
+
+
+
+	return 0;
 }

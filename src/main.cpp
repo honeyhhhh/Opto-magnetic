@@ -32,8 +32,7 @@ unsigned threadID[THREAD_NUM];
 
 MyCamera cam[CAM_NUM];
 
-
-
+bool collect_static = true;
 
 VOID CALLBACK TimerRoutine(PVOID lpParameter, BOOLEAN TimerOrWaitFired)
 {
@@ -53,6 +52,37 @@ int main()
 
 
     PylonInitialize();
+
+    if (collect_static)
+    {
+        certus_init4();
+        // aurora_init();
+        for (int i = 0; i < CAM_NUM; i++)
+        {
+            cam[i].Init(CamIps[i]);
+        }
+
+        cout << "begin" << endl;
+        char c;
+        while ((c = getchar()) != 'n')
+        {
+            // a_get_frame2();
+            c_get_frame4();
+            for (int i = 0; i < CAM_NUM; i++)
+            {
+                cam_get_frame2(&cam[i]);
+            }
+        }
+        certus_stop();
+        // aurora_stop();
+        PylonTerminate();
+
+
+        return 0;
+    }
+
+
+
 
     // 设置主线程优先级
     if(!::SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS))
