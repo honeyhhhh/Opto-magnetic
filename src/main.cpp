@@ -57,10 +57,10 @@ int main()
     {
         certus_init4();
         // aurora_init();
-        for (int i = 0; i < CAM_NUM; i++)
-        {
-            cam[i].Init(CamIps[i]);
-        }
+        // for (int i = 0; i < CAM_NUM; i++)
+        // {
+        //     cam[i].Init(CamIps[i]);
+        // }
 
         cout << "begin" << endl;
         char c;
@@ -68,10 +68,10 @@ int main()
         {
             // a_get_frame2();
             c_get_frame4();
-            for (int i = 0; i < CAM_NUM; i++)
-            {
-                cam_get_frame2(&cam[i]);
-            }
+            // for (int i = 0; i < CAM_NUM; i++)
+            // {
+            //     cam_get_frame2(&cam[i]);
+            // }
         }
         certus_stop();
         // aurora_stop();

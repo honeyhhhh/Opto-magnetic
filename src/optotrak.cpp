@@ -416,7 +416,7 @@ void c_get_frame4()
 		}
 		else
 		{
-			fd << p6dData[nCurRigid].transformation.euler.translation.x << " " << p6dData[nCurRigid].transformation.euler.translation.y << " " << p6dData[nCurRigid].transformation.euler.translation.z << "\n";
+			fd << p6dData[nCurRigid].transformation.quaternion.translation.x << " " << p6dData[nCurRigid].transformation.quaternion.translation.y << " " << p6dData[nCurRigid].transformation.quaternion.translation.z << "\n";
 			// fd << "YPR " << p6dData[nCurRigid].transformation.euler.rotation.yaw << " " << p6dData[nCurRigid].transformation.euler.rotation.pitch << " " << p6dData[nCurRigid].transformation.euler.rotation.roll << "\n";
 			fd << p6dData[nCurRigid].transformation.quaternion.rotation.q0 << " " << p6dData[nCurRigid].transformation.quaternion.rotation.qx <<
 			" " << p6dData[nCurRigid].transformation.quaternion.rotation.qy << " " << p6dData[nCurRigid].transformation.quaternion.rotation.qz << " " << p6dData[nCurRigid].QuaternionError  <<"\n";

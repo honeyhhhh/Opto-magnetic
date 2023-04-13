@@ -183,16 +183,16 @@ void MyCamera::Init(string camip)
 
 
 
-    camera.ExposureTimeAbs.TrySetValue(10000.0);
+    camera.ExposureTimeAbs.TrySetValue(20000.0);
     camera.AcquisitionFrameRateEnable.SetValue(false);
-    // camera.AcquisitionFrameRateAbs.SetValue(40.0);
+    camera.AcquisitionFrameRateAbs.SetValue(40.0);
     camera.Width.SetValue(1280);
     camera.Height.SetValue(1024);
-    // camera.TriggerMode.SetValue(TriggerMode_Off);
+    camera.TriggerMode.SetValue(TriggerMode_Off);
 
-    camera.TriggerSelector.SetValue(TriggerSelector_FrameStart);
-    camera.TriggerMode.SetValue(TriggerMode_On);
-    camera.TriggerSource.SetValue(TriggerSource_Line1);
+    // camera.TriggerSelector.SetValue(TriggerSelector_FrameStart);
+    // camera.TriggerMode.SetValue(TriggerMode_On);
+    // camera.TriggerSource.SetValue(TriggerSource_Line1);
     // camera.TriggerMode.SetValue(TriggerMode_Off);
 
 
